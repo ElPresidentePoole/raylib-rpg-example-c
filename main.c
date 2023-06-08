@@ -32,6 +32,10 @@ int main() {
     player->tex_c = new(player->tex_c);
     player->tex_c->tex = tileset;
     player->tex_c->rect = (Rectangle){.x = 6 * TILE_SIZE, .y = 79 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
+    player->col_c = new(player->col_c);
+    player->col_c->layer = 0b0000;
+    player->col_c->mask = 0b0000;
+    player->col_c->hitbox = (Rectangle){0, 0, TILE_SIZE, TILE_SIZE};
     const int PLAYER_SPEED = 100; // should this be a component or something?
 
     Entity* enemy = ecs_entity_create();
@@ -44,6 +48,10 @@ int main() {
     enemy->tex_c = new(player->tex_c);
     enemy->tex_c->tex = tileset;
     enemy->tex_c->rect = (Rectangle){.x = 2 * TILE_SIZE, .y = 77 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
+    enemy->col_c = new(enemy->col_c);
+    enemy->col_c->layer = 0b1000;
+    enemy->col_c->mask =  0b0100;
+    enemy->col_c->hitbox = (Rectangle){200, 200, TILE_SIZE, TILE_SIZE};
 
     EntityContainer* world = ecs_entitycontainer_create();
     // ecs_entitycontainer_push(world, missile);
@@ -53,6 +61,7 @@ int main() {
     ecs_entitycontainer_add_system(world, &ecs_system_render); // render has to go first to avoid lagging behind
     ecs_entitycontainer_add_system(world, &ecs_system_movement);
     ecs_entitycontainer_add_system(world, &ecs_system_despawn);
+    ecs_entitycontainer_add_system(world, &ecs_system_collision);
 
     while (!WindowShouldClose())
     {

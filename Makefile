@@ -1,6 +1,6 @@
 HEADERS = ecs.h util.h common_entities.h
 CC = gcc
-FLAGS = -g -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -Wall -Werror -Wpedantic -std=c99
+FLAGS = -g -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -Wall -Wpedantic -std=gnu99 # -Werror
 
 default: rpg
 

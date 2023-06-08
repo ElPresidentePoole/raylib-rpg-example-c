@@ -22,5 +22,9 @@ Entity* e_missile_create(Texture2D *const tileset, Entity* const player, Camera2
     missile->tex_c->rect = (Rectangle){.x = 15 * TILE_SIZE, .y = 31 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
     missile->life_c = new(missile->life_c);
     missile->life_c->time_remaining = 2.f;
+    missile->col_c = new(missile->col_c);
+    missile->col_c->layer = 0b0100;
+    missile->col_c->mask =  0b0000;
+    missile->col_c->hitbox = (Rectangle){player->trans_c->rect.x, player->trans_c->rect.y, TILE_SIZE, TILE_SIZE};
     return missile;
 }

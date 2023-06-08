@@ -12,7 +12,7 @@ Entity* ecs_entity_create() {
   e->tex_c = NULL;
   e->life_c = NULL;
   // e->hp_c = NULL;
-  // e->col_c = NULL;
+  e->col_c = NULL;
   return e;
 }
 
@@ -22,14 +22,19 @@ void ecs_entity_free(Entity* const e) {
   if (e->tex_c != NULL) free(e->tex_c);
   if (e->life_c != NULL) free(e->life_c);
   // if (e->hp_c != NULL) free(e->hp_c);
-  // if (e->col_c != NULL) free(e->col_c);
+  if (e->col_c != NULL) free(e->col_c);
   free(e);
 }
 
 void ecs_system_movement(EntityContainer* const ec, Entity* const e) {
     if (e->trans_c != NULL && e->vel_c != NULL) {
-        e->trans_c->rect.x += e->vel_c->vel.x * GetFrameTime();
-        e->trans_c->rect.y += e->vel_c->vel.y * GetFrameTime();
+      float dt = GetFrameTime();
+      e->trans_c->rect.x += e->vel_c->vel.x * dt;
+      e->trans_c->rect.y += e->vel_c->vel.y * dt;
+      if(e->col_c != NULL) {
+        e->col_c->hitbox.x += e->vel_c->vel.x * dt;
+        e->col_c->hitbox.y += e->vel_c->vel.x * dt;
+      }
     }
 }
 
@@ -44,6 +49,19 @@ void ecs_system_despawn(EntityContainer* const ec, Entity* const e) {
         e->life_c->time_remaining -= GetFrameTime();
         if(e->life_c->time_remaining <= 0.f) ecs_entitycontainer_queue_for_freeing(ec, e);
     }
+}
+
+void ecs_system_collision(EntityContainer* const ec, Entity* const e) {
+  if(e->col_c != NULL) {
+    for(int i = 0; i < MAX_ENTITIES; i++) {
+      if(ec->entities[i] != NULL && ec->entities[i]->col_c != NULL) {
+        if((e->col_c->mask & ec->entities[i]->col_c->layer) > 0 && CheckCollisionRecs(e->col_c->hitbox, ec->entities[i]->col_c->hitbox)) {
+          // should it be e->col_c->mask & ec->entities[i]->col_c->layer or e->col_c->layer & ec->entities[i]->col_c->mask
+          ecs_entitycontainer_queue_for_freeing(ec, e);
+        }
+      }
+    }
+  }
 }
 
 void ecs_entitycontainer_push(EntityContainer* const ec, Entity* const e) {

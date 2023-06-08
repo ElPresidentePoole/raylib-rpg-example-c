@@ -32,7 +32,8 @@ typedef struct {
 
 typedef struct {
   Rectangle hitbox;
-  int layers; // 0b0000
+  unsigned int layer; // bitwise
+  unsigned int mask; // bitwise
 } CollisionComponent;
 
 typedef struct {
@@ -41,7 +42,7 @@ typedef struct {
   TextureComponent* tex_c;
   LifespanComponent* life_c;
   // HealthComponent* hp_c;
-  // CollisionComponent* col_c;
+  CollisionComponent* col_c;
 } Entity;
 
 // Entity Container
@@ -69,5 +70,6 @@ void ecs_entity_free(Entity* const e);
 void ecs_system_movement(EntityContainer* const ec, Entity* const e);
 void ecs_system_render(EntityContainer* const ec, Entity* const e);
 void ecs_system_despawn(EntityContainer* const ec, Entity* const e);
+void ecs_system_collision(EntityContainer* const ec, Entity* const e);
 
 #endif // ENTITIES_H_
