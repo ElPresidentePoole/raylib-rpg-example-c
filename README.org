@@ -1,0 +1,6 @@
+#+title: Readme
+
+* Credits
+- Dungeon Crawl 32x32 Tiles :: https://opengameart.org/content/dungeon-crawl-32x32-tiles
+- Raylib :: https://www.raylib.com/
+- Alagard Font :: https://www.dafont.com/alagard.font
