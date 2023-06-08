@@ -1,5 +1,36 @@
+#include <raylib.h>
 #include "common_entities.h"
 #include "util.h"
+
+Entity* e_portal_create(Texture2D* const tileset, float x, float y) {
+    Entity* portal = ecs_entity_create();
+    portal->trans_c = new(portal->trans_c);
+    portal->trans_c->rect = (Rectangle){x, y, TILE_SIZE, TILE_SIZE};
+    portal->trans_c->angle = 0.0;
+    portal->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.0, .y = TILE_SIZE / 2.0};
+    portal->tex_c = new(portal->tex_c);
+    portal->tex_c->tex = *tileset;
+    portal->tex_c->rect = (Rectangle){.x = 55 * TILE_SIZE, .y = 12 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
+    return portal;
+}
+
+Entity* e_troll_create(Texture2D* const tileset, float x, float y) {
+    Entity* enemy = ecs_entity_create();
+    enemy->trans_c = new(enemy->trans_c);
+    enemy->trans_c->rect = (Rectangle){x, y, TILE_SIZE, TILE_SIZE};
+    enemy->trans_c->angle = 0.0;
+    enemy->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.0, .y = TILE_SIZE / 2.0};
+    enemy->vel_c = new(enemy->vel_c);
+    enemy->vel_c->vel = (Vector2){0, 0};
+    enemy->tex_c = new(enemy->tex_c);
+    enemy->tex_c->tex = *tileset;
+    enemy->tex_c->rect = (Rectangle){.x = 2 * TILE_SIZE, .y = 77 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
+    enemy->col_c = new(enemy->col_c);
+    enemy->col_c->layer = 0b1000;
+    enemy->col_c->mask =  0b0100;
+    enemy->col_c->hitbox = (Rectangle){x - TILE_SIZE / 2, y - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE};
+    return enemy;
+}
 
 Entity* e_missile_create(Texture2D *const tileset, Entity* const player, Camera2D* cam) {
     const int MISSILE_SPEED = 200;
@@ -25,6 +56,6 @@ Entity* e_missile_create(Texture2D *const tileset, Entity* const player, Camera2
     missile->col_c = new(missile->col_c);
     missile->col_c->layer = 0b0100;
     missile->col_c->mask =  0b0000;
-    missile->col_c->hitbox = (Rectangle){player->trans_c->rect.x, player->trans_c->rect.y, TILE_SIZE, TILE_SIZE};
+    missile->col_c->hitbox = (Rectangle){player->trans_c->rect.x - TILE_SIZE / 2, player->trans_c->rect.y - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE};
     return missile;
 }

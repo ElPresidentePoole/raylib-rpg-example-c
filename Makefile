@@ -20,6 +20,7 @@ rpg: main.o ecs.o util.o common_entities.o
 	$(CC) main.o ecs.o util.o common_entities.o -o rpg $(FLAGS)
 
 clean:
+	-rm -f common_entities.o
 	-rm -f util.o
 	-rm -f ecs.o
 	-rm -f main.o

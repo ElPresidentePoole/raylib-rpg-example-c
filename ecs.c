@@ -33,7 +33,7 @@ void ecs_system_movement(EntityContainer* const ec, Entity* const e) {
       e->trans_c->rect.y += e->vel_c->vel.y * dt;
       if(e->col_c != NULL) {
         e->col_c->hitbox.x += e->vel_c->vel.x * dt;
-        e->col_c->hitbox.y += e->vel_c->vel.x * dt;
+        e->col_c->hitbox.y += e->vel_c->vel.y * dt;
       }
     }
 }

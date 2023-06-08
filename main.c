@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#define ECS_DEBUG 1
 #include "common_entities.h"
 #include "ecs.h"
 #include "util.h"
@@ -20,7 +21,7 @@ int main() {
     Camera2D cam = { 0 };
     cam.offset = (Vector2){ screenWidth / 2.f - TILE_SIZE / 2.f, screenHeight / 2.f - TILE_SIZE / 2.f};
     cam.rotation = 0.f;
-    cam.zoom = 2.f;
+    cam.zoom = 1.f;
 
     Entity* player = ecs_entity_create();
     player->trans_c = new(player->trans_c);
@@ -35,28 +36,15 @@ int main() {
     player->col_c = new(player->col_c);
     player->col_c->layer = 0b0000;
     player->col_c->mask = 0b0000;
-    player->col_c->hitbox = (Rectangle){0, 0, TILE_SIZE, TILE_SIZE};
+    player->col_c->hitbox = (Rectangle){-TILE_SIZE/2, -TILE_SIZE/2, TILE_SIZE, TILE_SIZE};
     const int PLAYER_SPEED = 100; // should this be a component or something?
-
-    Entity* enemy = ecs_entity_create();
-    enemy->trans_c = new(player->trans_c);
-    enemy->trans_c->rect = (Rectangle){200, 200, TILE_SIZE, TILE_SIZE};
-    enemy->trans_c->angle = 0.0;
-    enemy->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.0, .y = TILE_SIZE / 2.0};
-    enemy->vel_c = new(player->vel_c);
-    enemy->vel_c->vel = (Vector2){0, 0};
-    enemy->tex_c = new(player->tex_c);
-    enemy->tex_c->tex = tileset;
-    enemy->tex_c->rect = (Rectangle){.x = 2 * TILE_SIZE, .y = 77 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
-    enemy->col_c = new(enemy->col_c);
-    enemy->col_c->layer = 0b1000;
-    enemy->col_c->mask =  0b0100;
-    enemy->col_c->hitbox = (Rectangle){200, 200, TILE_SIZE, TILE_SIZE};
 
     EntityContainer* world = ecs_entitycontainer_create();
     // ecs_entitycontainer_push(world, missile);
     ecs_entitycontainer_push(world, player);
-    ecs_entitycontainer_push(world, enemy);
+    ecs_entitycontainer_push(world, e_troll_create(&tileset, 200, 200));
+    ecs_entitycontainer_push(world, e_troll_create(&tileset, -200, -200));
+    ecs_entitycontainer_push(world, e_portal_create(&tileset, 200, 0));
 
     ecs_entitycontainer_add_system(world, &ecs_system_render); // render has to go first to avoid lagging behind
     ecs_entitycontainer_add_system(world, &ecs_system_movement);
@@ -91,6 +79,12 @@ int main() {
         BeginMode2D(cam);
 
         ClearBackground(RAYWHITE);
+
+        #if ECS_DEBUG
+        for(int i = 0; i < MAX_ENTITIES; i++) {
+            if(world->entities[i] != NULL && world->entities[i]->col_c) DrawRectangleRec(world->entities[i]->col_c->hitbox, GREEN);
+        }
+        #endif
 
         ecs_entitycontainer_tick(world);
 
