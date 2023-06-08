@@ -2,10 +2,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include "common_entities.h"
 #include "ecs.h"
 #include "util.h"
-
-#define TILE_SIZE 32
 
 int main() {
     const int screenWidth = 800;
@@ -24,8 +23,10 @@ int main() {
     cam.zoom = 2.f;
 
     Entity* player = ecs_entity_create();
-    player->pos_c = new(player->pos_c);
-    player->pos_c->pos = (Vector2){0, 0};
+    player->trans_c = new(player->trans_c);
+    player->trans_c->rect = (Rectangle){0, 0, TILE_SIZE, TILE_SIZE};
+    player->trans_c->angle = 0.0;
+    player->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.0, .y = TILE_SIZE / 2.0};
     player->vel_c = new(player->vel_c);
     player->vel_c->vel = (Vector2){0, 0};
     player->tex_c = new(player->tex_c);
@@ -33,9 +34,21 @@ int main() {
     player->tex_c->rect = (Rectangle){.x = 6 * TILE_SIZE, .y = 79 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
     const int PLAYER_SPEED = 100; // should this be a component or something?
 
+    Entity* enemy = ecs_entity_create();
+    enemy->trans_c = new(player->trans_c);
+    enemy->trans_c->rect = (Rectangle){200, 200, TILE_SIZE, TILE_SIZE};
+    enemy->trans_c->angle = 0.0;
+    enemy->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.0, .y = TILE_SIZE / 2.0};
+    enemy->vel_c = new(player->vel_c);
+    enemy->vel_c->vel = (Vector2){0, 0};
+    enemy->tex_c = new(player->tex_c);
+    enemy->tex_c->tex = tileset;
+    enemy->tex_c->rect = (Rectangle){.x = 2 * TILE_SIZE, .y = 77 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
+
     EntityContainer* world = ecs_entitycontainer_create();
     // ecs_entitycontainer_push(world, missile);
     ecs_entitycontainer_push(world, player);
+    ecs_entitycontainer_push(world, enemy);
 
     ecs_entitycontainer_add_system(world, &ecs_system_render); // render has to go first to avoid lagging behind
     ecs_entitycontainer_add_system(world, &ecs_system_movement);
@@ -59,29 +72,9 @@ int main() {
         struct Vector2 pm_normal = Vector2_normalized_multi(player_movement, PLAYER_SPEED);
         player->vel_c->vel.x = pm_normal.x;
         player->vel_c->vel.y = pm_normal.y;
-        printf("%f %f\n", player->vel_c->vel.x, player->vel_c->vel.y);
-        cam.target = (Vector2){ player->pos_c->pos.x, player->pos_c->pos.y };
+        cam.target = (Vector2){ player->trans_c->rect.x, player->trans_c->rect.y };
         if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            const int MISSILE_SPEED = 100;
-            Entity* missile = ecs_entity_create();
-            missile->pos_c = new(missile->pos_c);
-            missile->pos_c->pos = (Vector2){player->pos_c->pos.x, player->pos_c->pos.y};
-            Vector2 mouse_pos = GetScreenToWorld2D(GetMousePosition(), cam);
-            int dx = player->pos_c->pos.x - mouse_pos.x;
-            int dy = player->pos_c->pos.y - mouse_pos.y;
-            double angle_between_player_and_mouse = atan2(dy, dx);
-            missile->vel_c = new(missile->vel_c);
-            missile->vel_c->vel = (Vector2){-cos(angle_between_player_and_mouse), -sin(angle_between_player_and_mouse)};
-            missile->vel_c->vel.x *= MISSILE_SPEED;
-            missile->vel_c->vel.y *= MISSILE_SPEED;
-
-            //GetMousePosition()
-            //missile->vel_c->vel = (Vector2){MISSILE_SPEED * cos(angle_to_mouse), MISSILE_SPEED * sin(angle_to_mouse)};
-            missile->tex_c = new(missile->tex_c);
-            missile->tex_c->tex = tileset;
-            missile->tex_c->rect = (Rectangle){.x = 15 * TILE_SIZE, .y = 31 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
-            missile->life_c = new(missile->life_c);
-            missile->life_c->time_remaining = 2.f;
+            Entity* missile = e_missile_create(&tileset, player, &cam);
             ecs_entitycontainer_push(world, missile);
         }
         BeginDrawing();

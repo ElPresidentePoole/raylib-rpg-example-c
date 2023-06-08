@@ -3,13 +3,15 @@
 
 #include <raylib.h>
 #include <stdbool.h>
-#define MAX_ENTITIES 128
+#define MAX_ENTITIES 256
 #define MAX_SYSTEMS 64
 
 // Components
 typedef struct {
-  Vector2 pos;
-} PositionComponent;
+  Rectangle rect;
+  double angle;
+  Vector2 origin;
+} TransformComponent;
 
 typedef struct {
   Vector2 vel;
@@ -24,11 +26,22 @@ typedef struct {
   float time_remaining;
 } LifespanComponent;
 
+// typedef struct {
+  // int hp;
+// } HealthComponent;
+
 typedef struct {
-  PositionComponent* pos_c;
+  Rectangle hitbox;
+  int layers; // 0b0000
+} CollisionComponent;
+
+typedef struct {
+  TransformComponent* trans_c;
   VelocityComponent* vel_c;
   TextureComponent* tex_c;
   LifespanComponent* life_c;
+  // HealthComponent* hp_c;
+  // CollisionComponent* col_c;
 } Entity;
 
 // Entity Container

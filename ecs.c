@@ -7,31 +7,35 @@
 
 Entity* ecs_entity_create() {
   Entity* e = new(e);
-  e->pos_c = NULL;
+  e->trans_c = NULL;
   e->vel_c = NULL;
   e->tex_c = NULL;
   e->life_c = NULL;
+  // e->hp_c = NULL;
+  // e->col_c = NULL;
   return e;
 }
 
 void ecs_entity_free(Entity* const e) {
-  if (e->pos_c != NULL) free(e->pos_c);
+  if (e->trans_c != NULL) free(e->trans_c);
   if (e->vel_c != NULL) free(e->vel_c);
   if (e->tex_c != NULL) free(e->tex_c);
   if (e->life_c != NULL) free(e->life_c);
+  // if (e->hp_c != NULL) free(e->hp_c);
+  // if (e->col_c != NULL) free(e->col_c);
   free(e);
 }
 
 void ecs_system_movement(EntityContainer* const ec, Entity* const e) {
-    if (e->pos_c != NULL && e->vel_c != NULL) {
-        e->pos_c->pos.x += e->vel_c->vel.x * GetFrameTime();
-        e->pos_c->pos.y += e->vel_c->vel.y * GetFrameTime();
+    if (e->trans_c != NULL && e->vel_c != NULL) {
+        e->trans_c->rect.x += e->vel_c->vel.x * GetFrameTime();
+        e->trans_c->rect.y += e->vel_c->vel.y * GetFrameTime();
     }
 }
 
 void ecs_system_render(EntityContainer* const ec, Entity* const e) {
-    if (e->pos_c != NULL && e->tex_c != NULL) {
-        DrawTextureRec(e->tex_c->tex, e->tex_c->rect, e->pos_c->pos, WHITE);
+    if (e->trans_c != NULL && e->tex_c != NULL) {
+      DrawTexturePro(e->tex_c->tex, e->tex_c->rect, e->trans_c->rect, e->trans_c->origin, e->trans_c->angle, WHITE);
     }
 }
 
@@ -51,7 +55,8 @@ void ecs_entitycontainer_push(EntityContainer* const ec, Entity* const e) {
   }
 
   printf("Unable to push entity; couldn't find a free spot.\n");
-  exit(1);
+  ecs_entity_free(e);
+  //exit(1);
 }
 
 void ecs_entitycontainer_queue_for_freeing(EntityContainer* const ec, Entity* const e) {
@@ -71,7 +76,7 @@ void ecs_entitycontainer_queue_for_freeing(EntityContainer* const ec, Entity* co
 }
 
 bool ecs_entitycontainer_is_entity_queued_for_removal(EntityContainer* const ec, Entity* const e) {
-  for(int i = 0; i < MAX_ENTITIES; i++) { // XXX: do we need to check if our entities array already contains e?
+  for(int i = 0; i < MAX_ENTITIES; i++) {
     if(ec->queued_for_free[i] == e) {
       return true;
     }
@@ -96,6 +101,7 @@ void ecs_entitycontainer_free_queued(EntityContainer* const ec) {
         if(ec->entities[ei] == to_remove) {
           ecs_entity_free(ec->entities[ei]);
           ec->entities[ei] = NULL;
+          ec->queued_for_free[ri] = NULL;
         }
       }
     }
