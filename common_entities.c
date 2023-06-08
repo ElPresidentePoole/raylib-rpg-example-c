@@ -2,6 +2,26 @@
 #include "common_entities.h"
 #include "util.h"
 
+Entity* e_player_create(Texture2D* const tileset, float x, float y) {
+    Entity* player = ecs_entity_create();
+    player->trans_c = new(player->trans_c);
+    player->trans_c->rect = (Rectangle){x, y, TILE_SIZE, TILE_SIZE};
+    player->trans_c->angle = 0.0;
+    player->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.0, .y = TILE_SIZE / 2.0};
+    player->vel_c = new(player->vel_c);
+    player->vel_c->vel = (Vector2){0, 0};
+    player->tex_c = new(player->tex_c);
+    player->tex_c->tex = *tileset;
+    player->tex_c->rect = (Rectangle){.x = 6 * TILE_SIZE, .y = 79 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
+    player->col_c = new(player->col_c);
+    player->col_c->layer = 0; // 0b000
+    player->col_c->mask = 0; // 0b000
+    player->col_c->hitbox = (Rectangle){x-TILE_SIZE/2, y-TILE_SIZE/2, TILE_SIZE, TILE_SIZE};
+    player->col_c->break_on_impact = false;
+    player->col_c->dmg = 0;
+    return player;
+}
+
 Entity* e_portal_create(Texture2D* const tileset, float x, float y) {
     Entity* portal = ecs_entity_create();
     portal->trans_c = new(portal->trans_c);
@@ -22,18 +42,22 @@ Entity* e_troll_create(Texture2D* const tileset, float x, float y) {
     enemy->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.0, .y = TILE_SIZE / 2.0};
     enemy->vel_c = new(enemy->vel_c);
     enemy->vel_c->vel = (Vector2){0, 0};
+    enemy->hp_c = new(enemy->hp_c);
+    enemy->hp_c->hp = 5;
     enemy->tex_c = new(enemy->tex_c);
     enemy->tex_c->tex = *tileset;
     enemy->tex_c->rect = (Rectangle){.x = 2 * TILE_SIZE, .y = 77 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
     enemy->col_c = new(enemy->col_c);
-    enemy->col_c->layer = 0b1000;
-    enemy->col_c->mask =  0b0100;
+    enemy->col_c->layer = 8; // 0b1000
+    enemy->col_c->mask =  4; // 0b0100
     enemy->col_c->hitbox = (Rectangle){x - TILE_SIZE / 2, y - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE};
+    enemy->col_c->break_on_impact = false;
+    enemy->col_c->dmg = 0;
     return enemy;
 }
 
 Entity* e_missile_create(Texture2D *const tileset, Entity* const player, Camera2D* cam) {
-    const int MISSILE_SPEED = 200;
+    static const int MISSILE_SPEED = 400;
     Entity* missile = ecs_entity_create();
     Vector2 mouse_pos = GetScreenToWorld2D(GetMousePosition(), *cam);
     int dx = player->trans_c->rect.x - mouse_pos.x;
@@ -54,8 +78,10 @@ Entity* e_missile_create(Texture2D *const tileset, Entity* const player, Camera2
     missile->life_c = new(missile->life_c);
     missile->life_c->time_remaining = 2.f;
     missile->col_c = new(missile->col_c);
-    missile->col_c->layer = 0b0100;
-    missile->col_c->mask =  0b0000;
+    missile->col_c->layer = 4; // 0b0100
+    missile->col_c->mask =  0; // 0b0000
     missile->col_c->hitbox = (Rectangle){player->trans_c->rect.x - TILE_SIZE / 2, player->trans_c->rect.y - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE};
+    missile->col_c->break_on_impact = true;
+    missile->col_c->dmg = 1;
     return missile;
 }

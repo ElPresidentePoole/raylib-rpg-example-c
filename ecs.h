@@ -26,23 +26,30 @@ typedef struct {
   float time_remaining;
 } LifespanComponent;
 
-// typedef struct {
-  // int hp;
-// } HealthComponent;
+typedef struct {
+  int hp;
+} HealthComponent;
 
 typedef struct {
   Rectangle hitbox;
   unsigned int layer; // bitwise
   unsigned int mask; // bitwise
+  int dmg;
+  bool break_on_impact;
 } CollisionComponent;
+
+typedef struct {
+  char text[128]; // hope that's enough lol
+} LabelComponent;
 
 typedef struct {
   TransformComponent* trans_c;
   VelocityComponent* vel_c;
   TextureComponent* tex_c;
   LifespanComponent* life_c;
-  // HealthComponent* hp_c;
+  HealthComponent* hp_c;
   CollisionComponent* col_c;
+  LabelComponent* lab_c;
 } Entity;
 
 // Entity Container
@@ -50,6 +57,7 @@ typedef struct EntityContainer_s {
   Entity* entities[MAX_ENTITIES];
   Entity* queued_for_free[MAX_ENTITIES];
   void (*systems[MAX_SYSTEMS])(struct EntityContainer_s*, Entity*); // Ew, EntityContainer_s?
+  Font game_font;
 } EntityContainer;
 
 EntityContainer* ecs_entitycontainer_create();

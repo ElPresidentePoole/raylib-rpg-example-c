@@ -11,8 +11,9 @@ Entity* ecs_entity_create() {
   e->vel_c = NULL;
   e->tex_c = NULL;
   e->life_c = NULL;
-  // e->hp_c = NULL;
+  e->hp_c = NULL;
   e->col_c = NULL;
+  e->lab_c = NULL;
   return e;
 }
 
@@ -21,8 +22,9 @@ void ecs_entity_free(Entity* const e) {
   if (e->vel_c != NULL) free(e->vel_c);
   if (e->tex_c != NULL) free(e->tex_c);
   if (e->life_c != NULL) free(e->life_c);
-  // if (e->hp_c != NULL) free(e->hp_c);
+  if (e->hp_c != NULL) free(e->hp_c);
   if (e->col_c != NULL) free(e->col_c);
+  if (e->lab_c != NULL) free(e->lab_c);
   free(e);
 }
 
@@ -39,8 +41,13 @@ void ecs_system_movement(EntityContainer* const ec, Entity* const e) {
 }
 
 void ecs_system_render(EntityContainer* const ec, Entity* const e) {
-    if (e->trans_c != NULL && e->tex_c != NULL) {
-      DrawTexturePro(e->tex_c->tex, e->tex_c->rect, e->trans_c->rect, e->trans_c->origin, e->trans_c->angle, WHITE);
+    if (e->trans_c != NULL) {
+      if(e->tex_c != NULL) {
+        DrawTexturePro(e->tex_c->tex, e->tex_c->rect, e->trans_c->rect, e->trans_c->origin, e->trans_c->angle, WHITE);
+      }
+      if(e->lab_c != NULL) {
+        DrawTextEx(ec->game_font, e->lab_c->text, (Vector2){.x = e->trans_c->rect.x, .y = e->trans_c->rect.y}, 12, 0.1, RED);
+      }
     }
 }
 
@@ -55,9 +62,27 @@ void ecs_system_collision(EntityContainer* const ec, Entity* const e) {
   if(e->col_c != NULL) {
     for(int i = 0; i < MAX_ENTITIES; i++) {
       if(ec->entities[i] != NULL && ec->entities[i]->col_c != NULL) {
-        if((e->col_c->mask & ec->entities[i]->col_c->layer) > 0 && CheckCollisionRecs(e->col_c->hitbox, ec->entities[i]->col_c->hitbox)) {
-          // should it be e->col_c->mask & ec->entities[i]->col_c->layer or e->col_c->layer & ec->entities[i]->col_c->mask
-          ecs_entitycontainer_queue_for_freeing(ec, e);
+        if((e->col_c->layer & ec->entities[i]->col_c->mask) > 0 && CheckCollisionRecs(e->col_c->hitbox, ec->entities[i]->col_c->hitbox)) {
+          // should it be e->col_c->mask & ec->entities[i]->col_c->layer or e->col_c->layer & ec->entities[i]->col_c->mask ?
+          if(e->col_c->break_on_impact) ecs_entitycontainer_queue_for_freeing(ec, e);
+          if(e->col_c->dmg > 0 && ec->entities[i]->hp_c != NULL) {
+            ec->entities[i]->hp_c->hp -= e->col_c->dmg;
+            if(ec->entities[i]->hp_c->hp <= 0) { // XXX: should this go here or ecs_system_despawn?
+              ecs_entitycontainer_queue_for_freeing(ec, ec->entities[i]);
+            }
+            Entity* label = ecs_entity_create();
+            label->lab_c = new(label->lab_c);
+            sprintf(label->lab_c->text, "%d", e->col_c->dmg);
+            label->trans_c = new(label->trans_c);
+            label->trans_c->angle = 0.f;
+            label->trans_c->origin = (Vector2){TILE_SIZE / 2, TILE_SIZE / 2};
+            label->trans_c->rect = ec->entities[i]->trans_c->rect;
+            label->life_c = new(label->life_c);
+            label->life_c->time_remaining = 2.f;
+            label->vel_c = new(label->vel_c);
+            label->vel_c->vel = (Vector2){.x = 0, .y = -50};
+            ecs_entitycontainer_push(ec, label);
+          }
         }
       }
     }
@@ -146,6 +171,7 @@ EntityContainer* ecs_entitycontainer_create() {
   for(int i = 0; i < MAX_SYSTEMS; i++) {
     new_ec->systems[i] = NULL;
   }
+  new_ec->game_font = LoadFont("./alagard.ttf");
   return new_ec;
 }
 
@@ -154,6 +180,7 @@ void ecs_entitycontainer_free(EntityContainer* const ec) {
   for(int i = 0; i < MAX_ENTITIES; i++) {
     if(ec->entities[i] != NULL) ecs_entity_free(ec->entities[i]);
   }
+  UnloadFont(ec->game_font);
   free(ec);
 }
 
