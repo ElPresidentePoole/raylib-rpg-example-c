@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <time.h>
 #define ECS_DEBUG 0 // draw hitboxes
 #include "common_entities.h"
 #include "ecs.h"
 #include "util.h"
 
 int main() {
+    srand(time(NULL));
     const int screenWidth = 1280;
     const int screenHeight = 720;
 

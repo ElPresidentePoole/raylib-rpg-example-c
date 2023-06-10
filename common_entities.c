@@ -82,6 +82,6 @@ Entity* e_missile_create(Texture2D *const tileset, Entity* const player, Camera2
     missile->col_c->mask =  0; // 0b0000
     missile->col_c->hitbox = (Rectangle){player->trans_c->rect.x - TILE_SIZE / 2, player->trans_c->rect.y - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE};
     missile->col_c->break_on_impact = true;
-    missile->col_c->dmg = 1;
+    missile->col_c->dmg = rand() % 2 + 2;
     return missile;
 }
