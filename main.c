@@ -15,6 +15,7 @@ int main() {
     // InitAudioDevice();
 
     Texture2D tileset = LoadTexture("./tileset.png");
+    unsigned int gold = 0;
 
     SetTargetFPS(60);
 
@@ -82,6 +83,8 @@ int main() {
         ecs_entitycontainer_tick(world);
 
         EndMode2D();
+
+        DrawTextEx(world->game_font, TextFormat("Gold: %d", gold), (Vector2){10, 10}, 30.f, 0.1f, YELLOW);
 
         EndDrawing();
         ecs_entitycontainer_free_queued(world);

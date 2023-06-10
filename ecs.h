@@ -3,7 +3,7 @@
 
 #include <raylib.h>
 #include <stdbool.h>
-#define MAX_ENTITIES 256
+#define MAX_ENTITIES 1024
 #define MAX_SYSTEMS 64
 
 // Components
