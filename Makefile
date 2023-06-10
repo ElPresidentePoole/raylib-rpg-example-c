@@ -1,9 +1,9 @@
 HEADERS = ecs.h util.h common_entities.h
 CC = gcc
 ifeq ($(TARGET), windows)
-	FLAGS = -g -lraylib -lopengl32 -lgdi32 -lwinmm -Wpedantic -std=c99
+	FLAGS = -g -lraylib -lopengl32 -lgdi32 -lwinmm -Wpedantic -std=c99 -Werror
 else
-	FLAGS = -g -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -Wall -Wpedantic -std=c99 # -Werror
+	FLAGS = -g -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -Wall -Wpedantic -std=c99 -Werror
 endif
 
 default: rpg

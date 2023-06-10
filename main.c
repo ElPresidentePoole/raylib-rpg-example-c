@@ -16,7 +16,6 @@ int main() {
     InitWindow(screenWidth, screenHeight, "rpg");
     // InitAudioDevice();
 
-    Texture2D tileset = LoadTexture("./tileset.png");
     unsigned int gold = 0;
 
     SetTargetFPS(60);
@@ -27,17 +26,18 @@ int main() {
     cam.zoom = 2.f;
 
 
-    EntityContainer* world = ecs_entitycontainer_create();
-    Entity* player = e_player_create(&tileset, 0, 0);
+    struct EntityContainer* world = ecs_entitycontainer_create();
+    struct Entity* player = e_player_create(0, 0);
     ecs_entitycontainer_push(world, player);
-    ecs_entitycontainer_push(world, e_troll_create(&tileset, 200, 200));
-    ecs_entitycontainer_push(world, e_troll_create(&tileset, -200, -200));
-    ecs_entitycontainer_push(world, e_portal_create(&tileset, 200, 0));
+    ecs_entitycontainer_push(world, e_troll_create(200, 200));
+    ecs_entitycontainer_push(world, e_troll_create(-200, -200));
+    ecs_entitycontainer_push(world, e_portal_create(200, 0));
 
     ecs_entitycontainer_add_system(world, &ecs_system_render); // render has to go first to avoid lagging behind
     ecs_entitycontainer_add_system(world, &ecs_system_movement);
     ecs_entitycontainer_add_system(world, &ecs_system_despawn);
     ecs_entitycontainer_add_system(world, &ecs_system_collision);
+    ecs_entitycontainer_add_system(world, &ecs_system_timers);
 
     const int PLAYER_SPEED = 200; // should this be a component or something?
     while (!WindowShouldClose())
@@ -60,7 +60,7 @@ int main() {
         player->vel_c->vel.y = pm_normal.y;
         cam.target = (Vector2){ player->trans_c->rect.x, player->trans_c->rect.y };
         if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            Entity* missile = e_missile_create(&tileset, player, &cam);
+            struct Entity* missile = e_missile_create(player, &cam);
             ecs_entitycontainer_push(world, missile);
         }
         BeginDrawing();
@@ -72,7 +72,7 @@ int main() {
         // Draw background
         for(int x = -128; x < 128; x++) {
             for(int y = -128; y < 128; y++) {
-                DrawTextureRec(tileset, (Rectangle){.x = 49 * TILE_SIZE, .y = 4 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE}, (Vector2){.x = x * TILE_SIZE, .y = y * TILE_SIZE}, WHITE);
+                DrawTextureRec(world->game_tileset, (Rectangle){.x = 49 * TILE_SIZE, .y = 4 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE}, (Vector2){.x = x * TILE_SIZE, .y = y * TILE_SIZE}, WHITE);
             }
         }
 
@@ -94,7 +94,6 @@ int main() {
 
     ecs_entitycontainer_free(world);
 
-    UnloadTexture(tileset);
     CloseWindow();        // Close window and OpenGL context
   return 0;
 }
