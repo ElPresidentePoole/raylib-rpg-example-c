@@ -323,7 +323,8 @@ void e_control_player_controls(struct EntityContainer* const ec, struct Entity* 
 
   static float cooldown = 2.f;
   cooldown -= GetFrameTime();
-  if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && cooldown <= 0) { // FIXME: why is this function being ran so many times per frame?
+  if(IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cooldown <= 0.f) { // FIXME: why is this function being ran so many times per frame?
+    // is it related to this ? https://stackoverflow.com/questions/69916768/raylib-cpp-ismousebuttonpressed-causes-infinite-loop
     struct Entity* missile = e_missile_create(e, &ec->cam);
     ecs_entitycontainer_push(ec, missile);
     cooldown = 2.f;
