@@ -19,6 +19,9 @@ struct Entity* e_player_create(float x, float y) {
     player->col_c->hitbox = (Rectangle){x-TILE_SIZE/2, y-TILE_SIZE/2, TILE_SIZE, TILE_SIZE};
     player->col_c->break_on_impact = false;
     player->col_c->dmg = 0;
+    player->con_c = new(player->con_c);
+    player->con_c->control = &e_control_player_controls;
+
     return player;
 }
 
@@ -57,6 +60,8 @@ struct Entity* e_troll_create(float x, float y) {
     enemy->col_c->hitbox = (Rectangle){x - TILE_SIZE / 2, y - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE};
     enemy->col_c->break_on_impact = false;
     enemy->col_c->dmg = 0;
+    enemy->con_c = new(enemy->con_c);
+    enemy->con_c->control = &e_control_run_towards_player;
     return enemy;
 }
 

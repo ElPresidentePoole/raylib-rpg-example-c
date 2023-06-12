@@ -16,6 +16,7 @@ struct Entity* ecs_entity_create() {
   e->col_c = NULL;
   e->lab_c = NULL;
   e->tim_c = NULL;
+  e->con_c = NULL;
   return e;
 }
 
@@ -28,30 +29,70 @@ void ecs_entity_free(struct Entity* const e) {
   if (e->col_c != NULL) free(e->col_c);
   if (e->lab_c != NULL) free(e->lab_c);
   if (e->tim_c != NULL) free(e->tim_c);
+  if (e->con_c != NULL) free(e->con_c);
   free(e);
 }
 
 void ecs_system_movement(struct EntityContainer* const ec, struct Entity* const e) {
-    if (e->trans_c != NULL && e->vel_c != NULL) {
-      float dt = GetFrameTime();
-      e->trans_c->rect.x += e->vel_c->vel.x * dt;
-      e->trans_c->rect.y += e->vel_c->vel.y * dt;
-      if(e->col_c != NULL) {
-        e->col_c->hitbox.x += e->vel_c->vel.x * dt;
-        e->col_c->hitbox.y += e->vel_c->vel.y * dt;
-      }
+  if (e->trans_c != NULL && e->vel_c != NULL) {
+    float dt = GetFrameTime();
+    e->trans_c->rect.x += e->vel_c->vel.x * dt;
+    e->trans_c->rect.y += e->vel_c->vel.y * dt;
+    if(e->col_c != NULL) {
+      e->col_c->hitbox.x += e->vel_c->vel.x * dt;
+      e->col_c->hitbox.y += e->vel_c->vel.y * dt;
     }
+  }
 }
 
-void ecs_system_render(struct EntityContainer* const ec, struct Entity* const e) {
-    if (e->trans_c != NULL) {
-      if(e->tex_c != NULL) {
-        DrawTexturePro(ec->game_tileset, e->tex_c->rect, e->trans_c->rect, e->trans_c->origin, e->trans_c->angle, WHITE);
-      }
-      if(e->lab_c != NULL) {
-        DrawTextEx(ec->game_font, e->lab_c->text, (Vector2){.x = e->trans_c->rect.x, .y = e->trans_c->rect.y}, 12, 0.1, RED);
+void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
+  BeginDrawing();
+  ClearBackground(BLACK);
+  BeginMode2D(ec->cam);
+
+  // Draw background
+  for(int x = -128; x < 128; x++) {
+    for (int y = -128; y < 128; y++) {
+      DrawTextureRec(ec->game_tileset,
+                     (Rectangle){.x = 49 * TILE_SIZE,
+                                 .y = 4 * TILE_SIZE,
+                                 .width = TILE_SIZE,
+                                 .height = TILE_SIZE},
+                     (Vector2){.x = x * TILE_SIZE, .y = y * TILE_SIZE}, WHITE);
+    }
+  }
+
+#if ECS_COL_DEBUG
+  for (int i = 0; i < MAX_ENTITIES; i++) {
+    if (world->entities[i] != NULL && world->entities[i]->col_c)
+      DrawRectangleRec(world->entities[i]->col_c->hitbox, GREEN);
+  }
+#endif
+
+  for (int i = 0; i < MAX_ENTITIES; i++) {
+    if (ec->entities[i] != NULL) {
+      struct Entity *e = ec->entities[i];
+      if (e->trans_c != NULL) {
+        if (e->tex_c != NULL) {
+          DrawTexturePro(ec->game_tileset, e->tex_c->rect, e->trans_c->rect,
+                         e->trans_c->origin, e->trans_c->angle, WHITE);
+        }
+        if (e->lab_c != NULL) {
+          DrawTextEx(
+              ec->game_font, e->lab_c->text,
+              (Vector2){.x = e->trans_c->rect.x, .y = e->trans_c->rect.y}, 12,
+              0.1, RED);
+        }
       }
     }
+  }
+
+  EndMode2D();
+
+  // DrawTextEx(ec->game_font, TextFormat("Gold: %d", gold), (Vector2){10, 10},
+             // 30.f, 0.1f, YELLOW);
+
+  EndDrawing();
 }
 
 void ecs_system_despawn(struct EntityContainer* const ec, struct Entity* const e) {
@@ -103,6 +144,14 @@ void ecs_system_timers(struct EntityContainer* const ec, struct Entity* const e)
   }
 }
 
+void ecs_system_controls(struct EntityContainer* const ec, struct Entity* const e) {
+  for(int i = 0; i < MAX_ENTITIES; i++) {
+    if(e->trans_c != NULL && e->con_c != NULL) {
+      e->con_c->control(ec, e);
+    }
+  }
+}
+
 void on_timeout_spawn_troll(struct EntityContainer* const ec, struct Entity* const e) {
   struct Entity* troll = e_troll_create(e->trans_c->rect.x, e->trans_c->rect.y);
 
@@ -118,8 +167,13 @@ void ecs_entitycontainer_push(struct EntityContainer* const ec, struct Entity* c
   }
 
   printf("Unable to push entity; couldn't find a free spot.\n");
-  ecs_entity_free(e);
-  //exit(1);
+  printf("Current pointers in ec->entities: ");
+  for(int i = 0; i < MAX_ENTITIES; i++) {
+    printf(" %p, \n", (void*)ec->entities[i]);
+  }
+  printf("\ne: %p", (void*)e);
+  exit(1);
+  // ecs_entity_free(e);
 }
 
 void ecs_entitycontainer_queue_for_freeing(struct EntityContainer* const ec, struct Entity* const e) {
@@ -130,12 +184,17 @@ void ecs_entitycontainer_queue_for_freeing(struct EntityContainer* const ec, str
         return; // We found a place and don't need to continue any further.
       }
     }
+    /* printf("Unable to queue entity for removal; couldn't find a free spot.\n"); */
+    /* printf("Current pointers in ec->entities: "); */
+    /* for(int i = 0; i < MAX_ENTITIES; i++) { */
+    /*   printf(" %p, ", (void*)ec->entities[i]); */
+    /* } */
+    /* printf("\ne: %p", (void*)e); */
+    /* exit(1); */
   } else {
     printf("Entity already queued for removal!\n");
   }
 
-  printf("Unable to queue entity for removal; couldn't find a free spot.\n");
-  exit(1);
 }
 
 bool ecs_entitycontainer_is_entity_queued_for_removal(struct EntityContainer* const ec, struct Entity* const e) {
@@ -192,6 +251,11 @@ struct EntityContainer* ecs_entitycontainer_create() {
   }
   new_ec->game_font = LoadFont("./alagard.ttf");
   new_ec->game_tileset = LoadTexture("./tileset.png");
+  new_ec->cam = (Camera2D){0};
+  new_ec->cam.offset = (Vector2){ SCREEN_WIDTH / 2.f - TILE_SIZE / 2.f, SCREEN_HEIGHT / 2.f - TILE_SIZE / 2.f};
+  new_ec->cam.rotation = 0.f;
+  new_ec->cam.zoom = 2.f;
+
   return new_ec;
 }
 
@@ -222,5 +286,46 @@ void ecs_entitycontainer_tick(struct EntityContainer* const ec) {
           ec->systems[sys_idx](ec, ec->entities[ent_idx]);
       }
     }
+  }
+  ec->cam.target.x = ec->player->trans_c->rect.x;
+  ec->cam.target.y = ec->player->trans_c->rect.y;
+}
+
+void e_control_run_towards_player(struct EntityContainer* const ec, struct Entity* const e) {
+  static const int TROLL_SPEED = 100;
+  int dx = e->trans_c->rect.x - ec->player->trans_c->rect.x;
+  int dy = e->trans_c->rect.y - ec->player->trans_c->rect.y;
+  double angle_between_troll_and_target = atan2(dy, dx);
+  struct Vector2 v2 = (Vector2){-cos(angle_between_troll_and_target), -sin(angle_between_troll_and_target)};
+  v2.x *= TROLL_SPEED;
+  v2.y *= TROLL_SPEED;
+  struct Vector2 pm_normal = Vector2_normalized_multi(v2, TROLL_SPEED);
+  e->vel_c->vel = pm_normal;
+}
+
+void e_control_player_controls(struct EntityContainer* const ec, struct Entity* const e) {
+  static const int PLAYER_SPEED = 200; // should this be a component or something?
+  Vector2 player_movement = (Vector2){.x = 0, .y = 0};
+  if(IsKeyDown(KEY_S)) {
+    player_movement.y += 1;
+  }
+  if(IsKeyDown(KEY_W)) {
+    player_movement.y -= 1;
+  }
+  if(IsKeyDown(KEY_D)) {
+    player_movement.x += 1;
+  }
+  if(IsKeyDown(KEY_A)) {
+    player_movement.x -= 1;
+  }
+  struct Vector2 pm_normal = Vector2_normalized_multi(player_movement, PLAYER_SPEED);
+  e->vel_c->vel = pm_normal;
+
+  static float cooldown = 2.f;
+  cooldown -= GetFrameTime();
+  if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && cooldown <= 0) { // FIXME: why is this function being ran so many times per frame?
+    struct Entity* missile = e_missile_create(e, &ec->cam);
+    ecs_entitycontainer_push(ec, missile);
+    cooldown = 2.f;
   }
 }
