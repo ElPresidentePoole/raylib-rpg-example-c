@@ -145,10 +145,8 @@ void ecs_system_timers(struct EntityContainer* const ec, struct Entity* const e)
 }
 
 void ecs_system_controls(struct EntityContainer* const ec, struct Entity* const e) {
-  for(int i = 0; i < MAX_ENTITIES; i++) {
-    if(e->trans_c != NULL && e->con_c != NULL) {
-      e->con_c->control(ec, e);
-    }
+  if(e->trans_c != NULL && e->con_c != NULL) {
+    e->con_c->control(ec, e);
   }
 }
 
@@ -159,20 +157,23 @@ void on_timeout_spawn_troll(struct EntityContainer* const ec, struct Entity* con
 }
 
 void ecs_entitycontainer_push(struct EntityContainer* const ec, struct Entity* const e) {
-  for(int i = 0; i < MAX_ENTITIES; i++) {
+  bool found_spot = false;
+  for(int i = 0; i < MAX_ENTITIES && !found_spot; i++) {
     if(ec->entities[i] == NULL) {
       ec->entities[i] = e;
-      return; // We found a place and don't need to continue any further.
+      found_spot = true; // We found a place and don't need to continue any further.
     }
   }
 
-  printf("Unable to push entity; couldn't find a free spot.\n");
-  printf("Current pointers in ec->entities: ");
-  for(int i = 0; i < MAX_ENTITIES; i++) {
-    printf(" %p, \n", (void*)ec->entities[i]);
+  if(!found_spot) {
+    printf("Unable to push entity; couldn't find a free spot.\n");
+    printf("Current pointers in ec->entities: ");
+    for(int i = 0; i < MAX_ENTITIES; i++) {
+      printf(" %p, \n", (void*)ec->entities[i]);
+    }
+    printf("\ne: %p", (void*)e);
+    exit(1);
   }
-  printf("\ne: %p", (void*)e);
-  exit(1);
   // ecs_entity_free(e);
 }
 
@@ -321,12 +322,9 @@ void e_control_player_controls(struct EntityContainer* const ec, struct Entity* 
   struct Vector2 pm_normal = Vector2_normalized_multi(player_movement, PLAYER_SPEED);
   e->vel_c->vel = pm_normal;
 
-  static float cooldown = 2.f;
-  cooldown -= GetFrameTime();
-  if(IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cooldown <= 0.f) { // FIXME: why is this function being ran so many times per frame?
+  if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { // FIXME: why is this function being ran so many times per frame?
     // is it related to this ? https://stackoverflow.com/questions/69916768/raylib-cpp-ismousebuttonpressed-causes-infinite-loop
     struct Entity* missile = e_missile_create(e, &ec->cam);
     ecs_entitycontainer_push(ec, missile);
-    cooldown = 2.f;
   }
 }

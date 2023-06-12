@@ -30,10 +30,13 @@ int main() {
     ecs_entitycontainer_add_system(world, &ecs_system_timers);
     ecs_entitycontainer_add_system(world, &ecs_system_controls);
 
+    unsigned int frame_count = 0;
     while (!WindowShouldClose()) {
         ecs_entitycontainer_tick(world);
         ecs_entitycontainer_render(world);
         ecs_entitycontainer_free_queued(world);
+        frame_count++;
+        printf("%d\n", frame_count);
     }
 
     ecs_entitycontainer_free(world);
