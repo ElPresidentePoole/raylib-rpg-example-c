@@ -31,6 +31,7 @@ struct TransformComponent {
 
 struct VelocityComponent {
   Vector2 vel;
+  double da; // delta angle
 };
 
 struct TextureComponent {

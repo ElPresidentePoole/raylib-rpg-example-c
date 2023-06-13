@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#define ECS_COL_DEBUG 0 // draw hitboxes
 
 struct Entity* ecs_entity_create() {
   struct Entity* e = new(e);
@@ -42,6 +43,7 @@ void ecs_system_movement(struct EntityContainer* const ec, struct Entity* const 
     float dt = GetFrameTime();
     e->trans_c->rect.x += e->vel_c->vel.x * dt;
     e->trans_c->rect.y += e->vel_c->vel.y * dt;
+    e->trans_c->angle += e->vel_c->da * dt;
     if(e->col_c != NULL) {
       e->col_c->hitbox.x += e->vel_c->vel.x * dt;
       e->col_c->hitbox.y += e->vel_c->vel.y * dt;
@@ -68,8 +70,8 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
 
 #if ECS_COL_DEBUG
   for (int i = 0; i < MAX_ENTITIES; i++) {
-    if (world->entities[i] != NULL && world->entities[i]->col_c)
-      DrawRectangleRec(world->entities[i]->col_c->hitbox, GREEN);
+    if (ec->entities[i] != NULL && ec->entities[i]->col_c)
+      DrawRectangleRec(ec->entities[i]->col_c->hitbox, GREEN);
   }
 #endif
 
@@ -94,6 +96,7 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
   EndMode2D();
 
   DrawTextEx(ec->game_font, TextFormat("Gold: %d", ec->player->inv_c->gold), (Vector2){10, 10}, 30.f, 0.1f, YELLOW);
+  DrawTextEx(ec->game_font, TextFormat("HP: %d", ec->player->hp_c->hp), (Vector2){10, 40}, 30.f, 0.1f, RED);
 
   EndDrawing();
 }

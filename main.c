@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
-#define ECS_COL_DEBUG 0 // draw hitboxes
 #include "common_entities.h"
 #include "ecs.h"
 #include "util.h"

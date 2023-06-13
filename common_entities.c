@@ -19,6 +19,7 @@ struct Entity* e_player_create(float x, float y) {
     player->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.0, .y = TILE_SIZE / 2.0};
     player->vel_c = new(player->vel_c);
     player->vel_c->vel = (Vector2){0, 0};
+    player->vel_c->da = 0;
     player->tex_c = new(player->tex_c);
     player->tex_c->rect = (Rectangle){.x = 6 * TILE_SIZE, .y = 79 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
     player->col_c = new(player->col_c);
@@ -31,6 +32,8 @@ struct Entity* e_player_create(float x, float y) {
     player->con_c->control = &e_control_player_controls;
     player->inv_c = new(player->inv_c);
     player->inv_c->gold = 0;
+    player->hp_c = new(player->hp_c);
+    player->hp_c->hp = 10;
 
     return player;
 }
@@ -60,6 +63,7 @@ struct Entity* e_troll_create(float x, float y) {
     enemy->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.0, .y = TILE_SIZE / 2.0};
     enemy->vel_c = new(enemy->vel_c);
     enemy->vel_c->vel = (Vector2){0, 0};
+    enemy->vel_c->da = 0;
     enemy->hp_c = new(enemy->hp_c);
     enemy->hp_c->hp = 5;
     enemy->tex_c = new(enemy->tex_c);
@@ -88,12 +92,17 @@ struct Entity* e_missile_create(struct Entity* const player, Camera2D* cam) {
     missile->vel_c->vel = (Vector2){-cos(angle_between_player_and_mouse), -sin(angle_between_player_and_mouse)};
     missile->vel_c->vel.x *= MISSILE_SPEED;
     missile->vel_c->vel.y *= MISSILE_SPEED;
+    // missile->vel_c->da = 0;
+    missile->vel_c->da = 270;
     missile->trans_c = new(missile->trans_c);
     missile->trans_c->rect = (Rectangle){player->trans_c->rect.x, player->trans_c->rect.y, TILE_SIZE, TILE_SIZE};
     missile->trans_c->angle = angle_between_player_and_mouse * 180 / 3.1416 + 90;
     missile->trans_c->origin = (Vector2){.x = TILE_SIZE / 2, .y = TILE_SIZE / 2};
-
-    missile->tex_c = new(missile->tex_c); missile->tex_c->rect = (Rectangle){.x = 15 * TILE_SIZE, .y = 31 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE}; missile->life_c = new(missile->life_c); missile->life_c->time_remaining = 2.f;
+    missile->tex_c = new(missile->tex_c);
+    // missile->tex_c->rect = (Rectangle){.x = 15 * TILE_SIZE, .y = 31 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
+    missile->tex_c->rect = (Rectangle){.x = 63 * TILE_SIZE, .y = 46 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
+    missile->life_c = new(missile->life_c);
+    missile->life_c->time_remaining = 2.f;
     missile->col_c = new(missile->col_c);
     missile->col_c->layer = LAYER_MISSILE;
     missile->col_c->mask = 0;
@@ -117,6 +126,7 @@ struct Entity* e_coin_create(float x, float y, int amount_of_gold) {
     coin->col_c->mask = 0;
     coin->col_c->hitbox = (Rectangle){x - TILE_SIZE / 2.f, y - TILE_SIZE / 2.f, TILE_SIZE, TILE_SIZE};
     coin->col_c->break_on_impact = true;
+    coin->col_c->dmg = 0;
     coin->pic_c = new(coin->pic_c);
     coin->pic_c->gold_reward = 1;
 
@@ -137,5 +147,6 @@ struct Entity* e_label_create(float x, float y, const char* text, const Color co
     label->life_c->time_remaining = 2.f;
     label->vel_c = new(label->vel_c);
     label->vel_c->vel = (Vector2){.x = 0, .y = -50};
+    label->vel_c->da = 0;
     return label;
 }
