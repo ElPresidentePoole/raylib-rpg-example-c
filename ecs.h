@@ -19,6 +19,7 @@ struct TimerComponent;
 struct ControlComponent;
 struct InventoryComponent;
 struct PickupComponent;
+struct TrailComponent;
 struct Entity;
 struct EntityContainer;
 
@@ -34,8 +35,9 @@ struct VelocityComponent {
   double da; // delta angle
 };
 
-struct TextureComponent {
+struct TextureComponent { // maybe should be called VisibilityComponent?
   Rectangle rect;
+  unsigned char alpha;
 };
 
 struct LifespanComponent {
@@ -80,6 +82,12 @@ struct PickupComponent {
   int gold_reward;
 };
 
+struct TrailComponent {
+  float time_between_copies;
+  float time_remaining;
+  unsigned int remaining_copies;
+};
+
 struct Entity {
   struct TransformComponent* trans_c;
   struct VelocityComponent* vel_c; // XXX should this just be part of the TransformComponent?
@@ -92,6 +100,7 @@ struct Entity {
   struct ControlComponent* con_c;
   struct InventoryComponent* inv_c;
   struct PickupComponent* pic_c;
+  struct TrailComponent* tra_c;
 };
 
 // Entity Container

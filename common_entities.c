@@ -23,6 +23,7 @@ struct Entity* e_player_create(float x, float y) {
     player->vel_c->da = 0;
     player->tex_c = new(player->tex_c);
     player->tex_c->rect = (Rectangle){.x = 6 * TILE_SIZE, .y = 79 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
+    player->tex_c->alpha = 255U;
     player->col_c = new(player->col_c);
     player->col_c->layer = LAYER_PLAYER;
     player->col_c->mask = LAYER_COIN | LAYER_ENEMY_HURTBOX;
@@ -47,6 +48,7 @@ struct Entity* e_portal_create(float x, float y) {
     portal->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.0, .y = TILE_SIZE / 2.0};
     portal->tex_c = new(portal->tex_c);
     portal->tex_c->rect = (Rectangle){.x = 55 * TILE_SIZE, .y = 12 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
+    portal->tex_c->alpha = 255U;
     portal->tim_c = new(portal->tim_c);
     portal->tim_c->active = true;
     portal->tim_c->interval = 1.f;
@@ -69,6 +71,7 @@ struct Entity* e_troll_create(float x, float y) {
     enemy->hp_c->hp = 5;
     enemy->tex_c = new(enemy->tex_c);
     enemy->tex_c->rect = (Rectangle){.x = 2 * TILE_SIZE, .y = 77 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
+    enemy->tex_c->alpha = 255U;
     enemy->col_c = new(enemy->col_c);
     enemy->col_c->layer = LAYER_TROLL;
     enemy->col_c->mask = LAYER_MISSILE;
@@ -102,6 +105,7 @@ struct Entity* e_missile_create(struct Entity* const player, Camera2D* cam) {
     missile->tex_c = new(missile->tex_c);
     // missile->tex_c->rect = (Rectangle){.x = 15 * TILE_SIZE, .y = 31 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
     missile->tex_c->rect = (Rectangle){.x = 63 * TILE_SIZE, .y = 46 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
+    missile->tex_c->alpha = 255U;
     missile->life_c = new(missile->life_c);
     missile->life_c->time_remaining = 2.f;
     missile->col_c = new(missile->col_c);
@@ -110,6 +114,9 @@ struct Entity* e_missile_create(struct Entity* const player, Camera2D* cam) {
     missile->col_c->hitbox = (Rectangle){player->trans_c->rect.x - TILE_SIZE / 2, player->trans_c->rect.y - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE};
     missile->col_c->break_on_impact = true;
     missile->col_c->dmg = rand() % 2 + 2;
+    missile->tra_c = new(missile->tra_c);
+    missile->tra_c->time_between_copies = 0.15f;
+    missile->tra_c->remaining_copies = 15;
     return missile;
 }
 
@@ -122,6 +129,7 @@ struct Entity* e_coin_create(float x, float y, int amount_of_gold) {
     coin->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.f, .y = TILE_SIZE / 2.f};
     coin->tex_c = new(coin->tex_c);
     coin->tex_c->rect = (Rectangle){.x = 41 * TILE_SIZE, .y = 40 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
+    coin->tex_c->alpha = 255U;
     coin->col_c = new(coin->col_c);
     coin->col_c->layer = LAYER_COIN;
     coin->col_c->mask = 0;
@@ -167,4 +175,18 @@ struct Entity* e_hurtbox_create(float x, float y, int dmg) {
     troll_whack->col_c->break_on_impact = true;
     troll_whack->col_c->dmg = dmg;
     return troll_whack;
+}
+
+struct Entity* e_create_trail_ghost_from_entity(struct Entity* const e) {
+    struct Entity* ghost = ecs_entity_create();
+    ghost->trans_c = new (ghost->trans_c);
+    ghost->trans_c->rect = (Rectangle){e->trans_c->rect.x, e->trans_c->rect.y, TILE_SIZE, TILE_SIZE};
+    ghost->trans_c->angle = e->trans_c->angle;
+    ghost->trans_c->origin = (Vector2){e->trans_c->origin.x, e->trans_c->origin.y};
+    ghost->life_c = new (ghost->life_c);
+    ghost->life_c->time_remaining = 0.5f; // would TrailComponents cause a muckup if the Entity is freed?
+    ghost->tex_c = new(ghost->tex_c);
+    ghost->tex_c->alpha = 127;
+    ghost->tex_c->rect = (Rectangle){e->tex_c->rect.x, e->tex_c->rect.y, TILE_SIZE, TILE_SIZE};
+    return ghost;
 }

@@ -20,6 +20,7 @@ struct Entity* ecs_entity_create() {
   e->con_c = NULL;
   e->inv_c = NULL;
   e->pic_c = NULL;
+  e->tra_c = NULL;
   return e;
 }
 
@@ -35,6 +36,7 @@ void ecs_entity_free(struct Entity* const e) {
   if (e->con_c != NULL) free(e->con_c);
   if (e->inv_c != NULL) free(e->inv_c);
   if (e->pic_c != NULL) free(e->pic_c);
+  if (e->tra_c != NULL) free(e->tra_c);
   free(e);
 }
 
@@ -49,6 +51,15 @@ void ecs_system_movement(struct EntityContainer* const ec, struct Entity* const 
       e->col_c->hitbox.y += e->vel_c->vel.y * dt;
     }
   }
+  if(e->tra_c != NULL && e->tra_c->remaining_copies > 0) {
+    e->tra_c->time_remaining -= GetFrameTime();
+    if(e->tra_c->time_remaining <= 0) {
+      e->tra_c->time_remaining = e->tra_c->time_between_copies;
+      e->tra_c->remaining_copies--;
+      struct Entity* ghost = e_create_trail_ghost_from_entity(e);
+      ecs_entitycontainer_push(ec, ghost);
+    }
+  }
 }
 
 void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
@@ -59,7 +70,7 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
   // Draw background
   for(int x = -128; x < 128; x++) {
     for (int y = -128; y < 128; y++) {
-      int tile_x = 19;
+      int tile_x = 19; // math kurduggery to make a checkered floor
       int tile_y = 5;
       if(x % 2 == 0) tile_x--;
       if(y % 2 == 0) tile_x--;
@@ -84,8 +95,9 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
       struct Entity *e = ec->entities[i];
       if (e->trans_c != NULL) {
         if (e->tex_c != NULL) {
+          Color c = {255, 255, 255, e->tex_c->alpha};
           DrawTexturePro(ec->game_tileset, e->tex_c->rect, e->trans_c->rect,
-                         e->trans_c->origin, e->trans_c->angle, WHITE);
+                         e->trans_c->origin, e->trans_c->angle, c);
         }
         if (e->lab_c != NULL) {
           DrawTextEx(
