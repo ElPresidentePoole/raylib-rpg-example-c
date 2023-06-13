@@ -7,5 +7,6 @@ struct Entity* e_troll_create(float x, float y);
 struct Entity* e_portal_create(float x, float y);
 struct Entity* e_missile_create(struct Entity* const player, Camera2D* cam);
 struct Entity* e_coin_create(float x, float y, int amount_of_gold);
+struct Entity* e_label_create(float x, float y, const char* text, const Color col);
 
 #endif // COMMON_ENTITIES_H_

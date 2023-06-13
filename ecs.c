@@ -85,7 +85,7 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
           DrawTextEx(
               ec->game_font, e->lab_c->text,
               (Vector2){.x = e->trans_c->rect.x, .y = e->trans_c->rect.y}, 12,
-              0.1, RED);
+              0.1, e->lab_c->color);
         }
       }
     }
@@ -123,21 +123,14 @@ void ecs_system_collision(struct EntityContainer* const ec, struct Entity* const
           if(e->col_c->break_on_impact) ecs_entitycontainer_queue_for_freeing(ec, e);
           if(e->col_c->dmg > 0 && ec->entities[i]->hp_c != NULL) {
             ec->entities[i]->hp_c->hp -= e->col_c->dmg;
-            struct Entity* label = ecs_entity_create();
-            label->lab_c = new(label->lab_c);
-            sprintf(label->lab_c->text, "%d", e->col_c->dmg);
-            label->trans_c = new(label->trans_c);
-            label->trans_c->angle = 0.f;
-            label->trans_c->origin = (Vector2){TILE_SIZE / 2, TILE_SIZE / 2};
-            label->trans_c->rect = ec->entities[i]->trans_c->rect;
-            label->life_c = new(label->life_c);
-            label->life_c->time_remaining = 2.f;
-            label->vel_c = new(label->vel_c);
-            label->vel_c->vel = (Vector2){.x = 0, .y = -50};
+            const char* label_text = TextFormat("%d", e->col_c->dmg);
+            struct Entity* label = e_label_create(ec->entities[i]->trans_c->rect.x, ec->entities[i]->trans_c->rect.y, label_text, RED);
             ecs_entitycontainer_push(ec, label);
           }
           if(e->pic_c != NULL && ec->entities[i]->inv_c != NULL) {
             ec->entities[i]->inv_c->gold += e->pic_c->gold_reward;
+            struct Entity* label = e_label_create(ec->entities[i]->trans_c->rect.x, ec->entities[i]->trans_c->rect.y, TextFormat("%d", e->pic_c->gold_reward), YELLOW);
+            ecs_entitycontainer_push(ec, label);
           }
         }
       }

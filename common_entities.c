@@ -1,4 +1,7 @@
 #include <raylib.h>
+#include <stdio.h>
+#include <assert.h>
+#include <string.h>
 #include "common_entities.h"
 #include "ecs.h"
 #include "util.h"
@@ -118,4 +121,21 @@ struct Entity* e_coin_create(float x, float y, int amount_of_gold) {
     coin->pic_c->gold_reward = 1;
 
     return coin;
+}
+
+struct Entity* e_label_create(float x, float y, const char* text, const Color col) {
+    assert(strlen(text) < 128);
+    struct Entity* label = ecs_entity_create();
+    label->lab_c = new(label->lab_c);
+    sprintf(label->lab_c->text, "%s", text); // this is probably not good practice but oh well
+    label->lab_c->color = col;
+    label->trans_c = new(label->trans_c);
+    label->trans_c->angle = 0.f;
+    label->trans_c->origin = (Vector2){TILE_SIZE / 2, TILE_SIZE / 2};
+    label->trans_c->rect = (Rectangle){x, y, TILE_SIZE, TILE_SIZE};
+    label->life_c = new(label->life_c);
+    label->life_c->time_remaining = 2.f;
+    label->vel_c = new(label->vel_c);
+    label->vel_c->vel = (Vector2){.x = 0, .y = -50};
+    return label;
 }

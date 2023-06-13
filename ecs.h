@@ -55,6 +55,7 @@ struct CollisionComponent {
 
 struct LabelComponent {
   char text[128]; // hope that's enough lol
+  Color color;
 };
 
 struct TimerComponent {
