@@ -301,15 +301,26 @@ void ecs_entitycontainer_tick(struct EntityContainer* const ec) {
 }
 
 void e_control_run_towards_player(struct EntityContainer* const ec, struct Entity* const e) {
-  static const int TROLL_SPEED = 100;
-  int dx = e->trans_c->rect.x - ec->player->trans_c->rect.x;
-  int dy = e->trans_c->rect.y - ec->player->trans_c->rect.y;
-  double angle_between_troll_and_target = atan2(dy, dx);
-  struct Vector2 v2 = (Vector2){-cos(angle_between_troll_and_target), -sin(angle_between_troll_and_target)};
-  v2.x *= TROLL_SPEED;
-  v2.y *= TROLL_SPEED;
-  struct Vector2 pm_normal = Vector2_normalized_multi(v2, TROLL_SPEED);
-  e->vel_c->vel = pm_normal;
+  static float cooldown = 2.f;
+  cooldown -= GetFrameTime();
+  if(get_distance(e->trans_c->rect.x, e->trans_c->rect.y, ec->player->trans_c->rect.x, ec->player->trans_c->rect.y) < TILE_SIZE) {
+    e->vel_c->vel = VECTOR2_ZERO;
+    if(cooldown <= 0) {
+      cooldown = 2.f;
+      struct Entity* troll_whack = e_hurtbox_create(e->trans_c->rect.x, e->trans_c->rect.y, 1);
+      ecs_entitycontainer_push(ec, troll_whack);
+    }
+  } else {
+    static const int TROLL_SPEED = 100;
+    int dx = e->trans_c->rect.x - ec->player->trans_c->rect.x;
+    int dy = e->trans_c->rect.y - ec->player->trans_c->rect.y;
+    double angle_between_troll_and_target = atan2(dy, dx);
+    struct Vector2 v2 = (Vector2){-cos(angle_between_troll_and_target), -sin(angle_between_troll_and_target)};
+    v2.x *= TROLL_SPEED;
+    v2.y *= TROLL_SPEED;
+    struct Vector2 pm_normal = Vector2_normalized_multi(v2, TROLL_SPEED);
+    e->vel_c->vel = pm_normal;
+  }
 }
 
 void e_control_player_controls(struct EntityContainer* const ec, struct Entity* const e) {
@@ -330,8 +341,7 @@ void e_control_player_controls(struct EntityContainer* const ec, struct Entity* 
   struct Vector2 pm_normal = Vector2_normalized_multi(player_movement, PLAYER_SPEED);
   e->vel_c->vel = pm_normal;
 
-  if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { // FIXME: why is this function being ran so many times per frame?
-    // is it related to this ? https://stackoverflow.com/questions/69916768/raylib-cpp-ismousebuttonpressed-causes-infinite-loop
+  if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { 
     struct Entity* missile = e_missile_create(e, &ec->cam);
     ecs_entitycontainer_push(ec, missile);
   }

@@ -6,10 +6,11 @@
 #include "ecs.h"
 #include "util.h"
 
-const unsigned int LAYER_PLAYER = 8; // 0b1000
-const unsigned int LAYER_TROLL = 4; // 0b0100
-const unsigned int LAYER_MISSILE = 2; // 0b0010
-const unsigned int LAYER_COIN = 1; // 0b0001
+const unsigned int LAYER_ENEMY_HURTBOX = 16; // 0b10000
+const unsigned int LAYER_PLAYER = 8; // 0b01000
+const unsigned int LAYER_TROLL = 4; // 0b00100
+const unsigned int LAYER_MISSILE = 2; // 0b00010
+const unsigned int LAYER_COIN = 1; // 0b00001
 
 struct Entity* e_player_create(float x, float y) {
     struct Entity* player = ecs_entity_create();
@@ -24,7 +25,7 @@ struct Entity* e_player_create(float x, float y) {
     player->tex_c->rect = (Rectangle){.x = 6 * TILE_SIZE, .y = 79 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
     player->col_c = new(player->col_c);
     player->col_c->layer = LAYER_PLAYER;
-    player->col_c->mask = LAYER_COIN;
+    player->col_c->mask = LAYER_COIN | LAYER_ENEMY_HURTBOX;
     player->col_c->hitbox = (Rectangle){x-TILE_SIZE/2, y-TILE_SIZE/2, TILE_SIZE, TILE_SIZE};
     player->col_c->break_on_impact = false;
     player->col_c->dmg = 0;
@@ -149,4 +150,21 @@ struct Entity* e_label_create(float x, float y, const char* text, const Color co
     label->vel_c->vel = (Vector2){.x = 0, .y = -50};
     label->vel_c->da = 0;
     return label;
+}
+
+struct Entity* e_hurtbox_create(float x, float y, int dmg) {
+    struct Entity *troll_whack = ecs_entity_create();
+    troll_whack->trans_c = new (troll_whack->trans_c);
+    troll_whack->trans_c->rect = (Rectangle){x, y, TILE_SIZE, TILE_SIZE};
+    troll_whack->trans_c->angle = 0;
+    troll_whack->trans_c->origin = (Vector2){.x = TILE_SIZE / 2, .y = TILE_SIZE / 2};
+    troll_whack->life_c = new (troll_whack->life_c);
+    troll_whack->life_c->time_remaining = 0.1f;
+    troll_whack->col_c = new (troll_whack->col_c);
+    troll_whack->col_c->layer = LAYER_ENEMY_HURTBOX;
+    troll_whack->col_c->mask = 0;
+    troll_whack->col_c->hitbox = (Rectangle){x - TILE_SIZE / 2, y - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE};
+    troll_whack->col_c->break_on_impact = true;
+    troll_whack->col_c->dmg = dmg;
+    return troll_whack;
 }
