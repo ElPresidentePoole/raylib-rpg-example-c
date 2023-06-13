@@ -49,8 +49,8 @@ struct Entity* e_portal_create(float x, float y) {
     portal->tex_c->rect = (Rectangle){.x = 55 * TILE_SIZE, .y = 12 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
     portal->tim_c = new(portal->tim_c);
     portal->tim_c->active = true;
-    portal->tim_c->interval = 5.f;
-    portal->tim_c->time_remaining = 5.f;
+    portal->tim_c->interval = 1.f;
+    portal->tim_c->time_remaining = 1.f;
     portal->tim_c->repeating = true;
     portal->tim_c->on_timeout = &on_timeout_spawn_troll;
     return portal;
@@ -97,7 +97,7 @@ struct Entity* e_missile_create(struct Entity* const player, Camera2D* cam) {
     missile->vel_c->da = 270;
     missile->trans_c = new(missile->trans_c);
     missile->trans_c->rect = (Rectangle){player->trans_c->rect.x, player->trans_c->rect.y, TILE_SIZE, TILE_SIZE};
-    missile->trans_c->angle = angle_between_player_and_mouse * 180 / 3.1416 + 90;
+    missile->trans_c->angle = angle_between_player_and_mouse * 180 / 3.1416 - 135;
     missile->trans_c->origin = (Vector2){.x = TILE_SIZE / 2, .y = TILE_SIZE / 2};
     missile->tex_c = new(missile->tex_c);
     // missile->tex_c->rect = (Rectangle){.x = 15 * TILE_SIZE, .y = 31 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};

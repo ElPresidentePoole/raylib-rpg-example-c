@@ -59,9 +59,13 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
   // Draw background
   for(int x = -128; x < 128; x++) {
     for (int y = -128; y < 128; y++) {
+      int tile_x = 19;
+      int tile_y = 5;
+      if(x % 2 == 0) tile_x--;
+      if(y % 2 == 0) tile_x--;
       DrawTextureRec(ec->game_tileset,
-                     (Rectangle){.x = 49 * TILE_SIZE,
-                                 .y = 4 * TILE_SIZE,
+                     (Rectangle){.x = tile_x * TILE_SIZE,
+                                 .y = tile_y * TILE_SIZE,
                                  .width = TILE_SIZE,
                                  .height = TILE_SIZE},
                      (Vector2){.x = x * TILE_SIZE, .y = y * TILE_SIZE}, WHITE);
@@ -325,6 +329,8 @@ void e_control_run_towards_player(struct EntityContainer* const ec, struct Entit
 
 void e_control_player_controls(struct EntityContainer* const ec, struct Entity* const e) {
   static const int PLAYER_SPEED = 200; // should this be a component or something?
+  static float cooldown = 0.15f;
+  cooldown -= GetFrameTime();
   Vector2 player_movement = (Vector2){.x = 0, .y = 0};
   if(IsKeyDown(KEY_S)) {
     player_movement.y += 1;
@@ -341,8 +347,9 @@ void e_control_player_controls(struct EntityContainer* const ec, struct Entity* 
   struct Vector2 pm_normal = Vector2_normalized_multi(player_movement, PLAYER_SPEED);
   e->vel_c->vel = pm_normal;
 
-  if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { 
+  if(IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cooldown <= 0.f) { 
     struct Entity* missile = e_missile_create(e, &ec->cam);
+    cooldown = 0.15f;
     ecs_entitycontainer_push(ec, missile);
   }
 }
