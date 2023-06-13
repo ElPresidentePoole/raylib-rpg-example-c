@@ -4,7 +4,7 @@
 #include <raylib.h>
 #include <stdbool.h>
 #define MAX_ENTITIES 1024
-#define MAX_SYSTEMS 64
+#define MAX_SYSTEMS 16
 
 // Forward declarations
 // Component structs -- defined below
@@ -17,6 +17,8 @@ struct CollisionComponent;
 struct LabelComponent;
 struct TimerComponent;
 struct ControlComponent;
+struct InventoryComponent;
+struct PickupComponent;
 struct Entity;
 struct EntityContainer;
 
@@ -68,6 +70,14 @@ struct ControlComponent {
   // struct Entity const* targeting; // maybe have a controlC and targetC?
 };
 
+struct InventoryComponent {
+  int gold;
+};
+
+struct PickupComponent {
+  int gold_reward;
+};
+
 struct Entity {
   struct TransformComponent* trans_c;
   struct VelocityComponent* vel_c; // XXX should this just be part of the TransformComponent?
@@ -78,6 +88,8 @@ struct Entity {
   struct LabelComponent* lab_c;
   struct TimerComponent* tim_c;
   struct ControlComponent* con_c;
+  struct InventoryComponent* inv_c;
+  struct PickupComponent* pic_c;
 };
 
 // Entity Container

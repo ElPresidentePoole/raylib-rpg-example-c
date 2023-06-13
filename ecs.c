@@ -17,6 +17,8 @@ struct Entity* ecs_entity_create() {
   e->lab_c = NULL;
   e->tim_c = NULL;
   e->con_c = NULL;
+  e->inv_c = NULL;
+  e->pic_c = NULL;
   return e;
 }
 
@@ -30,6 +32,8 @@ void ecs_entity_free(struct Entity* const e) {
   if (e->lab_c != NULL) free(e->lab_c);
   if (e->tim_c != NULL) free(e->tim_c);
   if (e->con_c != NULL) free(e->con_c);
+  if (e->inv_c != NULL) free(e->inv_c);
+  if (e->pic_c != NULL) free(e->pic_c);
   free(e);
 }
 
@@ -89,17 +93,25 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
 
   EndMode2D();
 
-  // DrawTextEx(ec->game_font, TextFormat("Gold: %d", gold), (Vector2){10, 10},
-             // 30.f, 0.1f, YELLOW);
+  DrawTextEx(ec->game_font, TextFormat("Gold: %d", ec->player->inv_c->gold), (Vector2){10, 10}, 30.f, 0.1f, YELLOW);
 
   EndDrawing();
 }
 
 void ecs_system_despawn(struct EntityContainer* const ec, struct Entity* const e) {
-    if (e->life_c != NULL) {
-        e->life_c->time_remaining -= GetFrameTime();
-        if(e->life_c->time_remaining <= 0.f) ecs_entitycontainer_queue_for_freeing(ec, e);
+  if (e->life_c != NULL) {
+    e->life_c->time_remaining -= GetFrameTime();
+    if(e->life_c->time_remaining <= 0.f) ecs_entitycontainer_queue_for_freeing(ec, e);
+  }
+  if (e->hp_c != NULL) {
+    if(e->hp_c->hp <= 0) {
+      ecs_entitycontainer_queue_for_freeing(ec, e);
+      if(e->inv_c != NULL) {
+        struct Entity* coin_drop = e_coin_create(e->trans_c->rect.x, e->trans_c->rect.y, 1);
+        ecs_entitycontainer_push(ec, coin_drop);
+      }
     }
+  }
 }
 
 void ecs_system_collision(struct EntityContainer* const ec, struct Entity* const e) {
@@ -111,9 +123,6 @@ void ecs_system_collision(struct EntityContainer* const ec, struct Entity* const
           if(e->col_c->break_on_impact) ecs_entitycontainer_queue_for_freeing(ec, e);
           if(e->col_c->dmg > 0 && ec->entities[i]->hp_c != NULL) {
             ec->entities[i]->hp_c->hp -= e->col_c->dmg;
-            if(ec->entities[i]->hp_c->hp <= 0) { // XXX: should this go here or ecs_system_despawn?
-              ecs_entitycontainer_queue_for_freeing(ec, ec->entities[i]);
-            }
             struct Entity* label = ecs_entity_create();
             label->lab_c = new(label->lab_c);
             sprintf(label->lab_c->text, "%d", e->col_c->dmg);
@@ -126,6 +135,9 @@ void ecs_system_collision(struct EntityContainer* const ec, struct Entity* const
             label->vel_c = new(label->vel_c);
             label->vel_c->vel = (Vector2){.x = 0, .y = -50};
             ecs_entitycontainer_push(ec, label);
+          }
+          if(e->pic_c != NULL && ec->entities[i]->inv_c != NULL) {
+            ec->entities[i]->inv_c->gold += e->pic_c->gold_reward;
           }
         }
       }

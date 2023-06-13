@@ -3,6 +3,11 @@
 #include "ecs.h"
 #include "util.h"
 
+const unsigned int LAYER_PLAYER = 8; // 0b1000
+const unsigned int LAYER_TROLL = 4; // 0b0100
+const unsigned int LAYER_MISSILE = 2; // 0b0010
+const unsigned int LAYER_COIN = 1; // 0b0001
+
 struct Entity* e_player_create(float x, float y) {
     struct Entity* player = ecs_entity_create();
     player->trans_c = new(player->trans_c);
@@ -14,13 +19,15 @@ struct Entity* e_player_create(float x, float y) {
     player->tex_c = new(player->tex_c);
     player->tex_c->rect = (Rectangle){.x = 6 * TILE_SIZE, .y = 79 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
     player->col_c = new(player->col_c);
-    player->col_c->layer = 0; // 0b000
-    player->col_c->mask = 0; // 0b000
+    player->col_c->layer = LAYER_PLAYER;
+    player->col_c->mask = LAYER_COIN;
     player->col_c->hitbox = (Rectangle){x-TILE_SIZE/2, y-TILE_SIZE/2, TILE_SIZE, TILE_SIZE};
     player->col_c->break_on_impact = false;
     player->col_c->dmg = 0;
     player->con_c = new(player->con_c);
     player->con_c->control = &e_control_player_controls;
+    player->inv_c = new(player->inv_c);
+    player->inv_c->gold = 0;
 
     return player;
 }
@@ -55,13 +62,15 @@ struct Entity* e_troll_create(float x, float y) {
     enemy->tex_c = new(enemy->tex_c);
     enemy->tex_c->rect = (Rectangle){.x = 2 * TILE_SIZE, .y = 77 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
     enemy->col_c = new(enemy->col_c);
-    enemy->col_c->layer = 8; // 0b1000
-    enemy->col_c->mask =  4; // 0b0100
+    enemy->col_c->layer = LAYER_TROLL;
+    enemy->col_c->mask = LAYER_MISSILE;
     enemy->col_c->hitbox = (Rectangle){x - TILE_SIZE / 2, y - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE};
     enemy->col_c->break_on_impact = false;
     enemy->col_c->dmg = 0;
     enemy->con_c = new(enemy->con_c);
     enemy->con_c->control = &e_control_run_towards_player;
+    enemy->inv_c = new(enemy->inv_c);
+    enemy->inv_c->gold = 1;
     return enemy;
 }
 
@@ -81,15 +90,32 @@ struct Entity* e_missile_create(struct Entity* const player, Camera2D* cam) {
     missile->trans_c->angle = angle_between_player_and_mouse * 180 / 3.1416 + 90;
     missile->trans_c->origin = (Vector2){.x = TILE_SIZE / 2, .y = TILE_SIZE / 2};
 
-    missile->tex_c = new(missile->tex_c);
-    missile->tex_c->rect = (Rectangle){.x = 15 * TILE_SIZE, .y = 31 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
-    missile->life_c = new(missile->life_c);
-    missile->life_c->time_remaining = 2.f;
+    missile->tex_c = new(missile->tex_c); missile->tex_c->rect = (Rectangle){.x = 15 * TILE_SIZE, .y = 31 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE}; missile->life_c = new(missile->life_c); missile->life_c->time_remaining = 2.f;
     missile->col_c = new(missile->col_c);
-    missile->col_c->layer = 4; // 0b0100
-    missile->col_c->mask =  0; // 0b0000
+    missile->col_c->layer = LAYER_MISSILE;
+    missile->col_c->mask = 0;
     missile->col_c->hitbox = (Rectangle){player->trans_c->rect.x - TILE_SIZE / 2, player->trans_c->rect.y - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE};
     missile->col_c->break_on_impact = true;
     missile->col_c->dmg = rand() % 2 + 2;
     return missile;
+}
+
+struct Entity* e_coin_create(float x, float y, int amount_of_gold) {
+    struct Entity* coin = ecs_entity_create();
+
+    coin->trans_c = new(coin->trans_c);
+    coin->trans_c->rect = (Rectangle){x, y, TILE_SIZE, TILE_SIZE};
+    coin->trans_c->angle = 0.0;
+    coin->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.f, .y = TILE_SIZE / 2.f};
+    coin->tex_c = new(coin->tex_c);
+    coin->tex_c->rect = (Rectangle){.x = 41 * TILE_SIZE, .y = 40 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
+    coin->col_c = new(coin->col_c);
+    coin->col_c->layer = LAYER_COIN;
+    coin->col_c->mask = 0;
+    coin->col_c->hitbox = (Rectangle){x - TILE_SIZE / 2.f, y - TILE_SIZE / 2.f, TILE_SIZE, TILE_SIZE};
+    coin->col_c->break_on_impact = true;
+    coin->pic_c = new(coin->pic_c);
+    coin->pic_c->gold_reward = 1;
+
+    return coin;
 }
