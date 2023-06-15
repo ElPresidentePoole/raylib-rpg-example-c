@@ -22,6 +22,8 @@ struct Entity* ecs_entity_create() {
   e->inv_c = NULL;
   e->pic_c = NULL;
   e->tra_c = NULL;
+  e->xpr_c = NULL;
+  e->xpt_c = NULL;
   return e;
 }
 
@@ -37,30 +39,11 @@ void ecs_entity_free(struct Entity* const e) {
   if (e->inv_c != NULL) free(e->inv_c);
   if (e->pic_c != NULL) free(e->pic_c);
   if (e->tra_c != NULL) free(e->tra_c);
+  if (e->xpr_c != NULL) free(e->xpr_c);
+  if (e->xpt_c != NULL) free(e->xpt_c);
   free(e);
 }
 
-void ecs_system_movement(struct EntityContainer* const ec, struct Entity* const e) {
-  if (e->trans_c != NULL) {
-    float dt = GetFrameTime();
-    e->trans_c->rect.x += e->trans_c->velocity.x * dt;
-    e->trans_c->rect.y += e->trans_c->velocity.y * dt;
-    e->trans_c->angle += e->trans_c->angular_velocity * dt;
-    if(e->col_c != NULL) {
-      e->col_c->hitbox.x += e->trans_c->velocity.x * dt;
-      e->col_c->hitbox.y += e->trans_c->velocity.y * dt;
-    }
-  }
-  if(e->tra_c != NULL && e->tra_c->remaining_copies > 0) {
-    e->tra_c->time_remaining -= GetFrameTime();
-    if(e->tra_c->time_remaining <= 0) {
-      e->tra_c->time_remaining = e->tra_c->time_between_copies;
-      e->tra_c->remaining_copies--;
-      struct Entity* ghost = e_create_trail_ghost_from_entity(e);
-      ecs_entitycontainer_push(ec, ghost);
-    }
-  }
-}
 
 void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
   BeginDrawing();
@@ -111,68 +94,14 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
   }
 
   EndMode2D();
-
-  DrawTextEx(ec->game_font, TextFormat("Gold: %d", ec->player->inv_c->gold), (Vector2){10, 10}, 30.f, 0.1f, YELLOW);
-  DrawTextEx(ec->game_font, TextFormat("HP: %d", ec->player->hp_c->hp), (Vector2){10, 40}, 30.f, 0.1f, RED);
+  DrawTextEx(ec->game_font, TextFormat("Level: %d | XP: %d/%d", ec->player->xpt_c->level, ec->player->xpt_c->xp_total, ec->player->xpt_c->xp_for_next_level), (Vector2){12, 12}, 30.f, 0.1f, DARKBLUE);
+  DrawTextEx(ec->game_font, TextFormat("Level: %d | XP: %d/%d", ec->player->xpt_c->level, ec->player->xpt_c->xp_total, ec->player->xpt_c->xp_for_next_level), (Vector2){10, 10}, 30.f, 0.1f, BLUE);
+  DrawTextEx(ec->game_font, TextFormat("Gold: %d", ec->player->inv_c->gold), (Vector2){11, 41}, 30.f, 0.1f, GOLD);
+  DrawTextEx(ec->game_font, TextFormat("Gold: %d", ec->player->inv_c->gold), (Vector2){10, 40}, 30.f, 0.1f, YELLOW);
+  DrawTextEx(ec->game_font, TextFormat("HP: %d", ec->player->hp_c->hp), (Vector2){11, 71}, 30.f, 0.1f, BROWN);
+  DrawTextEx(ec->game_font, TextFormat("HP: %d", ec->player->hp_c->hp), (Vector2){10, 70}, 30.f, 0.1f, RED);
 
   EndDrawing();
-}
-
-void ecs_system_despawn(struct EntityContainer* const ec, struct Entity* const e) {
-  if (e->life_c != NULL) {
-    e->life_c->time_remaining -= GetFrameTime();
-    if(e->life_c->time_remaining <= 0.f) ecs_entitycontainer_queue_for_freeing(ec, e);
-  }
-  if (e->hp_c != NULL) {
-    if(e->hp_c->hp <= 0) {
-      ecs_entitycontainer_queue_for_freeing(ec, e);
-      if(e->inv_c != NULL) {
-        struct Entity* coin_drop = e_coin_create(e->trans_c->rect.x, e->trans_c->rect.y, 1);
-        ecs_entitycontainer_push(ec, coin_drop);
-      }
-    }
-  }
-}
-
-void ecs_system_collision(struct EntityContainer* const ec, struct Entity* const e) {
-  if(e->col_c != NULL) {
-    for(int i = 0; i < MAX_ENTITIES; i++) {
-      if(ec->entities[i] != NULL && ec->entities[i]->col_c != NULL) {
-        if((e->col_c->layer & ec->entities[i]->col_c->mask) > 0 && CheckCollisionRecs(e->col_c->hitbox, ec->entities[i]->col_c->hitbox)) {
-          // should it be e->col_c->mask & ec->entities[i]->col_c->layer or e->col_c->layer & ec->entities[i]->col_c->mask ?
-          if(e->col_c->break_on_impact) ecs_entitycontainer_queue_for_freeing(ec, e);
-          if(e->col_c->dmg > 0 && ec->entities[i]->hp_c != NULL) {
-            ec->entities[i]->hp_c->hp -= e->col_c->dmg;
-            const char* label_text = TextFormat("%d", e->col_c->dmg);
-            struct Entity* label = e_label_create(ec->entities[i]->trans_c->rect.x, ec->entities[i]->trans_c->rect.y, label_text, RED);
-            ecs_entitycontainer_push(ec, label);
-          }
-          if(e->pic_c != NULL && ec->entities[i]->inv_c != NULL) {
-            ec->entities[i]->inv_c->gold += e->pic_c->gold_reward;
-            struct Entity* label = e_label_create(ec->entities[i]->trans_c->rect.x, ec->entities[i]->trans_c->rect.y, TextFormat("%d", e->pic_c->gold_reward), YELLOW);
-            ecs_entitycontainer_push(ec, label);
-          }
-        }
-      }
-    }
-  }
-}
-
-void ecs_system_timers(struct EntityContainer* const ec, struct Entity* const e) {
-  if(e->tim_c != NULL && e->tim_c->active) {
-    struct TimerComponent* our_timer = e->tim_c;
-    our_timer->time_remaining -= GetFrameTime();
-    if(our_timer->time_remaining <= 0) {
-      our_timer->on_timeout(ec, e);
-      if(our_timer->repeating) our_timer->time_remaining = our_timer->interval;
-    }
-  }
-}
-
-void ecs_system_controls(struct EntityContainer* const ec, struct Entity* const e) {
-  if(e->trans_c != NULL && e->con_c != NULL) {
-    e->con_c->control(ec, e);
-  }
 }
 
 void on_timeout_spawn_troll(struct EntityContainer* const ec, struct Entity* const e) {

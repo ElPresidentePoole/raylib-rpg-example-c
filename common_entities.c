@@ -37,6 +37,10 @@ struct Entity* e_player_create(float x, float y) {
     player->inv_c->gold = 0;
     player->hp_c = new(player->hp_c);
     player->hp_c->hp = 10;
+    player->xpt_c = new(player->xpt_c);
+    player->xpt_c->level = 1;
+    player->xpt_c->xp_total = 0;
+    player->xpt_c->xp_for_next_level = 5;
 
     return player;
 }
@@ -47,6 +51,8 @@ struct Entity* e_portal_create(float x, float y) {
     portal->trans_c->rect = (Rectangle){x, y, TILE_SIZE, TILE_SIZE};
     portal->trans_c->angle = 0.0;
     portal->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.0, .y = TILE_SIZE / 2.0};
+    portal->trans_c->velocity = VECTOR2_ZERO;
+    portal->trans_c->angular_velocity = 0.f; 
     portal->vis_c = new(portal->vis_c);
     portal->vis_c->rect = (Rectangle){.x = 55 * TILE_SIZE, .y = 12 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
     portal->vis_c->alpha = 255U;
@@ -86,6 +92,8 @@ struct Entity* e_troll_create(float x, float y) {
     enemy->con_c->control = &e_control_run_towards_player;
     enemy->inv_c = new(enemy->inv_c);
     enemy->inv_c->gold = 1;
+    enemy->xpr_c = new(enemy->xpr_c);
+    enemy->xpr_c->xp_reward = 1;
     return enemy;
 }
 
@@ -120,7 +128,7 @@ struct Entity* e_missile_create(struct Entity* const player, Camera2D* cam) {
     missile->col_c->break_on_impact = true;
     missile->col_c->dmg = rand() % 2 + 2;
     missile->tra_c = new(missile->tra_c);
-    missile->tra_c->time_between_copies = 0.15f;
+    missile->tra_c->time_between_copies = 0.05f;
     missile->tra_c->remaining_copies = 15;
     return missile;
 }
@@ -132,6 +140,8 @@ struct Entity* e_coin_create(float x, float y, int amount_of_gold) {
     coin->trans_c->rect = (Rectangle){x, y, TILE_SIZE, TILE_SIZE};
     coin->trans_c->angle = 0.0;
     coin->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.f, .y = TILE_SIZE / 2.f};
+    coin->trans_c->velocity = VECTOR2_ZERO;
+    coin->trans_c->angular_velocity = 0.f; 
     coin->vis_c = new(coin->vis_c);
     coin->vis_c->rect = (Rectangle){.x = 41 * TILE_SIZE, .y = 40 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
     coin->vis_c->alpha = 255U;
@@ -172,6 +182,8 @@ struct Entity* e_hurtbox_create(float x, float y, int dmg) {
     troll_whack->trans_c->rect = (Rectangle){x, y, TILE_SIZE, TILE_SIZE};
     troll_whack->trans_c->angle = 0;
     troll_whack->trans_c->origin = (Vector2){.x = TILE_SIZE / 2, .y = TILE_SIZE / 2};
+    troll_whack->trans_c->velocity = VECTOR2_ZERO;
+    troll_whack->trans_c->angular_velocity = 0.f; 
     troll_whack->life_c = new (troll_whack->life_c);
     troll_whack->life_c->time_remaining = 0.1f;
     troll_whack->col_c = new (troll_whack->col_c);
@@ -189,10 +201,12 @@ struct Entity* e_create_trail_ghost_from_entity(struct Entity* const e) {
     ghost->trans_c->rect = (Rectangle){e->trans_c->rect.x, e->trans_c->rect.y, TILE_SIZE, TILE_SIZE};
     ghost->trans_c->angle = e->trans_c->angle;
     ghost->trans_c->origin = (Vector2){e->trans_c->origin.x, e->trans_c->origin.y};
+    ghost->trans_c->velocity = VECTOR2_ZERO;
+    ghost->trans_c->angular_velocity = 0.f; 
     ghost->life_c = new (ghost->life_c);
     ghost->life_c->time_remaining = 0.5f; // would TrailComponents cause a muckup if the Entity is freed?
     ghost->vis_c = new(ghost->vis_c);
-    ghost->vis_c->alpha = 127;
+    ghost->vis_c->alpha = 255U;
     ghost->vis_c->rect = (Rectangle){e->vis_c->rect.x, e->vis_c->rect.y, TILE_SIZE, TILE_SIZE};
     ghost->vis_c->fading = true;
     ghost->vis_c->fade_per_second = 255 / ghost->life_c->time_remaining; // this shouldn't be a float though

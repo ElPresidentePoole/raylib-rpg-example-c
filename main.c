@@ -7,13 +7,19 @@
 #include "ecs.h"
 #include "util.h"
 
+typedef enum {
+	MAIN_MENU
+} GameState;
+
 int main() {
     srand(time(NULL));
 
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "rpg");
+
+    // GameState current_state = MAIN_MENU;
     // InitAudioDevice();
 
-    SetTargetFPS(60);
+    SetTargetFPS(60); // TODO: replace this with proper handling of DT
 
     struct EntityContainer* world = ecs_entitycontainer_create();
     struct Entity* player = e_player_create(0, 0);
@@ -26,6 +32,7 @@ int main() {
     ecs_entitycontainer_add_system(world, &ecs_system_despawn);
     ecs_entitycontainer_add_system(world, &ecs_system_timers);
     ecs_entitycontainer_add_system(world, &ecs_system_controls);
+    ecs_entitycontainer_add_system(world, &ecs_system_experience);
 
     while (!WindowShouldClose()) {
         ecs_entitycontainer_tick(world);

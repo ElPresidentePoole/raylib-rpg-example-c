@@ -3,88 +3,10 @@
 
 #include <raylib.h>
 #include <stdbool.h>
+#include "ecs_components.h"
+#include "ecs_systems.h"
 #define MAX_ENTITIES 1024
 #define MAX_SYSTEMS 16
-
-// Forward declarations
-// Component structs -- defined below
-struct TransformComponent;
-struct VisibilityComponent;
-struct LifespanComponent;
-struct HealthComponent;
-struct CollisionComponent;
-struct LabelComponent;
-struct TimerComponent;
-struct ControlComponent;
-struct InventoryComponent;
-struct PickupComponent;
-struct TrailComponent;
-struct Entity;
-struct EntityContainer;
-
-// Component Definitions
-struct TransformComponent {
-  Rectangle rect;
-  double angle;
-  Vector2 origin;
-  Vector2 velocity;
-  double angular_velocity;
-};
-
-struct VisibilityComponent { // maybe should be called VisibilityComponent?
-  Rectangle rect;
-  unsigned char alpha;
-  bool fading;
-  int fade_per_second;
-};
-
-struct LifespanComponent {
-  float time_remaining;
-};
-
-struct HealthComponent {
-  int hp;
-};
-
-struct CollisionComponent {
-  Rectangle hitbox;
-  unsigned int layer; // bitwise
-  unsigned int mask; // bitwise
-  int dmg;
-  bool break_on_impact;
-};
-
-struct LabelComponent {
-  char text[128]; // hope that's enough lol
-  Color color;
-};
-
-struct TimerComponent {
-  bool active;
-  bool repeating;
-  float time_remaining;
-  float interval;
-  void (*on_timeout)(struct EntityContainer* const, struct Entity* const);
-};
-
-struct ControlComponent {
-  void (*control)(struct EntityContainer* const, struct Entity* const);
-  // struct Entity const* targeting; // maybe have a controlC and targetC?
-};
-
-struct InventoryComponent {
-  int gold;
-};
-
-struct PickupComponent {
-  int gold_reward;
-};
-
-struct TrailComponent {
-  float time_between_copies;
-  float time_remaining;
-  unsigned int remaining_copies;
-};
 
 struct Entity {
   struct TransformComponent* trans_c;
@@ -98,13 +20,15 @@ struct Entity {
   struct InventoryComponent* inv_c;
   struct PickupComponent* pic_c;
   struct TrailComponent* tra_c;
+  struct XpRewardComponent* xpr_c;
+  struct XpTrackerComponent* xpt_c;
 };
 
 // Entity Container
 struct EntityContainer {
   struct Entity* entities[MAX_ENTITIES];
   struct Entity* queued_for_free[MAX_ENTITIES];
-  void (*systems[MAX_SYSTEMS])(struct EntityContainer* const, struct Entity* const); // Ew, EntityContainer_s?
+  void (*systems[MAX_SYSTEMS])(struct EntityContainer* const, struct Entity* const);
   Font game_font;
   Texture2D game_tileset;
   struct Entity const* player; // this entity is very popular, so it would be best if we just held onto it
@@ -126,13 +50,6 @@ bool ecs_entitycontainer_is_entity_queued_for_removal(struct EntityContainer* co
 // Entity
 struct Entity* ecs_entity_create();
 void ecs_entity_free(struct Entity* const e);
-
-// Systems
-void ecs_system_movement(struct EntityContainer* const ec, struct Entity* const e);
-void ecs_system_despawn(struct EntityContainer* const ec, struct Entity* const e);
-void ecs_system_collision(struct EntityContainer* const ec, struct Entity* const e);
-void ecs_system_timers(struct EntityContainer* const ec, struct Entity* const e);
-void ecs_system_controls(struct EntityContainer* const ec, struct Entity* const e);
 
 // On Timeout Functions
 void on_timeout_spawn_troll(struct EntityContainer* const ec, struct Entity* const e);
