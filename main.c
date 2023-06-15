@@ -19,8 +19,6 @@ int main() {
     struct Entity* player = e_player_create(0, 0);
     world->player = player;
     ecs_entitycontainer_push(world, player);
-    ecs_entitycontainer_push(world, e_troll_create(200, 200));
-    ecs_entitycontainer_push(world, e_troll_create(-200, -200));
     ecs_entitycontainer_push(world, e_portal_create(200, 0));
 
     ecs_entitycontainer_add_system(world, &ecs_system_movement);

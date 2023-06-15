@@ -2,7 +2,9 @@
 #include "util.h"
 #include "common_entities.h"
 #include <raylib.h>
+#include <sys/param.h>
 #include <stdlib.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdbool.h>
 #define ECS_COL_DEBUG 0 // draw hitboxes
@@ -10,8 +12,7 @@
 struct Entity* ecs_entity_create() {
   struct Entity* e = new(e);
   e->trans_c = NULL;
-  e->vel_c = NULL;
-  e->tex_c = NULL;
+  e->vis_c = NULL;
   e->life_c = NULL;
   e->hp_c = NULL;
   e->col_c = NULL;
@@ -26,8 +27,7 @@ struct Entity* ecs_entity_create() {
 
 void ecs_entity_free(struct Entity* const e) {
   if (e->trans_c != NULL) free(e->trans_c);
-  if (e->vel_c != NULL) free(e->vel_c);
-  if (e->tex_c != NULL) free(e->tex_c);
+  if (e->vis_c != NULL) free(e->vis_c);
   if (e->life_c != NULL) free(e->life_c);
   if (e->hp_c != NULL) free(e->hp_c);
   if (e->col_c != NULL) free(e->col_c);
@@ -41,14 +41,14 @@ void ecs_entity_free(struct Entity* const e) {
 }
 
 void ecs_system_movement(struct EntityContainer* const ec, struct Entity* const e) {
-  if (e->trans_c != NULL && e->vel_c != NULL) {
+  if (e->trans_c != NULL) {
     float dt = GetFrameTime();
-    e->trans_c->rect.x += e->vel_c->vel.x * dt;
-    e->trans_c->rect.y += e->vel_c->vel.y * dt;
-    e->trans_c->angle += e->vel_c->da * dt;
+    e->trans_c->rect.x += e->trans_c->velocity.x * dt;
+    e->trans_c->rect.y += e->trans_c->velocity.y * dt;
+    e->trans_c->angle += e->trans_c->angular_velocity * dt;
     if(e->col_c != NULL) {
-      e->col_c->hitbox.x += e->vel_c->vel.x * dt;
-      e->col_c->hitbox.y += e->vel_c->vel.y * dt;
+      e->col_c->hitbox.x += e->trans_c->velocity.x * dt;
+      e->col_c->hitbox.y += e->trans_c->velocity.y * dt;
     }
   }
   if(e->tra_c != NULL && e->tra_c->remaining_copies > 0) {
@@ -94,9 +94,10 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
     if (ec->entities[i] != NULL) {
       struct Entity *e = ec->entities[i];
       if (e->trans_c != NULL) {
-        if (e->tex_c != NULL) {
-          Color c = {255, 255, 255, e->tex_c->alpha};
-          DrawTexturePro(ec->game_tileset, e->tex_c->rect, e->trans_c->rect,
+        if (e->vis_c != NULL) {
+          if (e->vis_c->fading) e->vis_c->alpha = MAX(e->vis_c->alpha - e->vis_c->fade_per_second * GetFrameTime(), 0);
+          Color c = {255, 255, 255, e->vis_c->alpha};
+          DrawTexturePro(ec->game_tileset, e->vis_c->rect, e->trans_c->rect,
                          e->trans_c->origin, e->trans_c->angle, c);
         }
         if (e->lab_c != NULL) {
@@ -320,7 +321,7 @@ void e_control_run_towards_player(struct EntityContainer* const ec, struct Entit
   static float cooldown = 2.f;
   cooldown -= GetFrameTime();
   if(get_distance(e->trans_c->rect.x, e->trans_c->rect.y, ec->player->trans_c->rect.x, ec->player->trans_c->rect.y) < TILE_SIZE) {
-    e->vel_c->vel = VECTOR2_ZERO;
+    e->trans_c->velocity = VECTOR2_ZERO;
     if(cooldown <= 0) {
       cooldown = 2.f;
       struct Entity* troll_whack = e_hurtbox_create(e->trans_c->rect.x, e->trans_c->rect.y, 1);
@@ -335,7 +336,7 @@ void e_control_run_towards_player(struct EntityContainer* const ec, struct Entit
     v2.x *= TROLL_SPEED;
     v2.y *= TROLL_SPEED;
     struct Vector2 pm_normal = Vector2_normalized_multi(v2, TROLL_SPEED);
-    e->vel_c->vel = pm_normal;
+    e->trans_c->velocity = pm_normal;
   }
 }
 
@@ -357,7 +358,7 @@ void e_control_player_controls(struct EntityContainer* const ec, struct Entity* 
     player_movement.x -= 1;
   }
   struct Vector2 pm_normal = Vector2_normalized_multi(player_movement, PLAYER_SPEED);
-  e->vel_c->vel = pm_normal;
+  e->trans_c->velocity = pm_normal;
 
   if(IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cooldown <= 0.f) { 
     struct Entity* missile = e_missile_create(e, &ec->cam);

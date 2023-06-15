@@ -9,8 +9,7 @@
 // Forward declarations
 // Component structs -- defined below
 struct TransformComponent;
-struct VelocityComponent;
-struct TextureComponent;
+struct VisibilityComponent;
 struct LifespanComponent;
 struct HealthComponent;
 struct CollisionComponent;
@@ -28,16 +27,15 @@ struct TransformComponent {
   Rectangle rect;
   double angle;
   Vector2 origin;
+  Vector2 velocity;
+  double angular_velocity;
 };
 
-struct VelocityComponent {
-  Vector2 vel;
-  double da; // delta angle
-};
-
-struct TextureComponent { // maybe should be called VisibilityComponent?
+struct VisibilityComponent { // maybe should be called VisibilityComponent?
   Rectangle rect;
   unsigned char alpha;
+  bool fading;
+  int fade_per_second;
 };
 
 struct LifespanComponent {
@@ -90,8 +88,7 @@ struct TrailComponent {
 
 struct Entity {
   struct TransformComponent* trans_c;
-  struct VelocityComponent* vel_c; // XXX should this just be part of the TransformComponent?
-  struct TextureComponent* tex_c;
+  struct VisibilityComponent* vis_c;
   struct LifespanComponent* life_c;
   struct HealthComponent* hp_c;
   struct CollisionComponent* col_c;
