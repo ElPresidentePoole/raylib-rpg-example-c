@@ -24,6 +24,7 @@ struct Entity* ecs_entity_create() {
   e->tra_c = NULL;
   e->xpr_c = NULL;
   e->xpt_c = NULL;
+  e->cli_c = NULL;
   return e;
 }
 
@@ -41,6 +42,7 @@ void ecs_entity_free(struct Entity* const e) {
   if (e->tra_c != NULL) free(e->tra_c);
   if (e->xpr_c != NULL) free(e->xpr_c);
   if (e->xpt_c != NULL) free(e->xpt_c);
+  if (e->cli_c != NULL) free(e->cli_c);
   free(e);
 }
 
@@ -58,11 +60,11 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
       if(x % 2 == 0) tile_x--;
       if(y % 2 == 0) tile_x--;
       DrawTextureRec(ec->game_tileset,
-                     (Rectangle){.x = tile_x * TILE_SIZE,
-                                 .y = tile_y * TILE_SIZE,
-                                 .width = TILE_SIZE,
-                                 .height = TILE_SIZE},
-                     (Vector2){.x = x * TILE_SIZE, .y = y * TILE_SIZE}, WHITE);
+          (Rectangle){.x = tile_x * TILE_SIZE,
+          .y = tile_y * TILE_SIZE,
+          .width = TILE_SIZE,
+          .height = TILE_SIZE},
+          (Vector2){.x = x * TILE_SIZE, .y = y * TILE_SIZE}, WHITE);
     }
   }
 
@@ -81,9 +83,13 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
           if (e->vis_c->fading) e->vis_c->alpha = MAX(e->vis_c->alpha - e->vis_c->fade_per_second * GetFrameTime(), 0);
           Color c = {255, 255, 255, e->vis_c->alpha};
           DrawTexturePro(ec->game_tileset, e->vis_c->rect, e->trans_c->rect,
-                         e->trans_c->origin, e->trans_c->angle, c);
+              e->trans_c->origin, e->trans_c->angle, c);
         }
         if (e->lab_c != NULL) {
+          DrawTextEx(
+              ec->game_font, e->lab_c->text,
+              (Vector2){.x = e->trans_c->rect.x+1, .y = e->trans_c->rect.y+1}, 12,
+              0.1, BLACK);
           DrawTextEx(
               ec->game_font, e->lab_c->text,
               (Vector2){.x = e->trans_c->rect.x, .y = e->trans_c->rect.y}, 12,
@@ -94,12 +100,14 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
   }
 
   EndMode2D();
-  DrawTextEx(ec->game_font, TextFormat("Level: %d | XP: %d/%d", ec->player->xpt_c->level, ec->player->xpt_c->xp_total, ec->player->xpt_c->xp_for_next_level), (Vector2){12, 12}, 30.f, 0.1f, DARKBLUE);
-  DrawTextEx(ec->game_font, TextFormat("Level: %d | XP: %d/%d", ec->player->xpt_c->level, ec->player->xpt_c->xp_total, ec->player->xpt_c->xp_for_next_level), (Vector2){10, 10}, 30.f, 0.1f, BLUE);
-  DrawTextEx(ec->game_font, TextFormat("Gold: %d", ec->player->inv_c->gold), (Vector2){11, 41}, 30.f, 0.1f, GOLD);
-  DrawTextEx(ec->game_font, TextFormat("Gold: %d", ec->player->inv_c->gold), (Vector2){10, 40}, 30.f, 0.1f, YELLOW);
-  DrawTextEx(ec->game_font, TextFormat("HP: %d", ec->player->hp_c->hp), (Vector2){11, 71}, 30.f, 0.1f, BROWN);
-  DrawTextEx(ec->game_font, TextFormat("HP: %d", ec->player->hp_c->hp), (Vector2){10, 70}, 30.f, 0.1f, RED);
+  if(ec->player != NULL) {
+    DrawTextEx(ec->game_font, TextFormat("Level: %d | XP: %d/%d", ec->player->xpt_c->level, ec->player->xpt_c->xp_total, ec->player->xpt_c->xp_for_next_level), (Vector2){12, 12}, 30.f, 0.1f, DARKBLUE);
+    DrawTextEx(ec->game_font, TextFormat("Level: %d | XP: %d/%d", ec->player->xpt_c->level, ec->player->xpt_c->xp_total, ec->player->xpt_c->xp_for_next_level), (Vector2){10, 10}, 30.f, 0.1f, BLUE);
+    DrawTextEx(ec->game_font, TextFormat("Gold: %d", ec->player->inv_c->gold), (Vector2){11, 41}, 30.f, 0.1f, GOLD);
+    DrawTextEx(ec->game_font, TextFormat("Gold: %d", ec->player->inv_c->gold), (Vector2){10, 40}, 30.f, 0.1f, YELLOW);
+    DrawTextEx(ec->game_font, TextFormat("HP: %d", ec->player->hp_c->hp), (Vector2){11, 71}, 30.f, 0.1f, BROWN);
+    DrawTextEx(ec->game_font, TextFormat("HP: %d", ec->player->hp_c->hp), (Vector2){10, 70}, 30.f, 0.1f, RED);
+  }
 
   EndDrawing();
 }
@@ -210,6 +218,7 @@ struct EntityContainer* ecs_entitycontainer_create() {
   new_ec->cam.offset = (Vector2){ SCREEN_WIDTH / 2.f - TILE_SIZE / 2.f, SCREEN_HEIGHT / 2.f - TILE_SIZE / 2.f};
   new_ec->cam.rotation = 0.f;
   new_ec->cam.zoom = 2.f;
+  new_ec->player = NULL;
 
   return new_ec;
 }
@@ -233,6 +242,14 @@ void ecs_entitycontainer_add_system(struct EntityContainer* const ec, void (*sys
   }
 }
 
+void ecs_entitycontainer_rm_all_systems(struct EntityContainer* const ec) {
+  for(int i = 0; i < MAX_SYSTEMS; i++) {
+    if(ec->systems[i] != NULL) {
+      ec->systems[i] = NULL;
+    }
+  }
+}
+
 void ecs_entitycontainer_tick(struct EntityContainer* const ec) {
   for (int sys_idx = 0; sys_idx < MAX_SYSTEMS; sys_idx++) {
     if (ec->systems[sys_idx] != NULL) {
@@ -242,8 +259,6 @@ void ecs_entitycontainer_tick(struct EntityContainer* const ec) {
       }
     }
   }
-  ec->cam.target.x = ec->player->trans_c->rect.x;
-  ec->cam.target.y = ec->player->trans_c->rect.y;
 }
 
 void e_control_run_towards_player(struct EntityContainer* const ec, struct Entity* const e) {

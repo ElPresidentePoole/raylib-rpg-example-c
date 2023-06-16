@@ -22,6 +22,7 @@ struct Entity {
   struct TrailComponent* tra_c;
   struct XpRewardComponent* xpr_c;
   struct XpTrackerComponent* xpt_c;
+  struct ClickableComponent* cli_c;
 };
 
 // Entity Container
@@ -42,6 +43,7 @@ void ecs_entitycontainer_queue_for_freeing(struct EntityContainer* const ec, str
 void ecs_entitycontainer_free_queued(struct EntityContainer* const ec);
 void ecs_entitycontainer_free(struct EntityContainer* const ec);
 void ecs_entitycontainer_add_system(struct EntityContainer* const ec, void (*system)(struct EntityContainer*, struct Entity*));
+void ecs_entitycontainer_rm_all_systems(struct EntityContainer* const ec);
 void ecs_entitycontainer_tick(struct EntityContainer* const ec);
 void ecs_entitycontainer_render(const struct EntityContainer* const ec);
 bool ecs_entitycontainer_contains_entity(struct EntityContainer const* const ec, struct Entity const* const e);

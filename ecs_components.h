@@ -16,6 +16,7 @@ struct PickupComponent;
 struct TrailComponent;
 struct XpRewardComponent;
 struct XpTrackerComponent;
+struct ClickableComponent;
 struct Entity;
 struct EntityContainer;
 
@@ -91,6 +92,11 @@ struct XpTrackerComponent {
 	unsigned int xp_total;
 	unsigned int xp_for_next_level;
 	unsigned int level;
+};
+
+struct ClickableComponent {
+  Rectangle clickbox;
+  void (*on_click)(struct EntityContainer* const, struct Entity* const);
 };
 
 #endif // ECS_COMPONENTS_H_

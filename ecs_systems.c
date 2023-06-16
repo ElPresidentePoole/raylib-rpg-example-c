@@ -93,3 +93,10 @@ void ecs_system_controls(struct EntityContainer* const ec, struct Entity* const 
     e->con_c->control(ec, e);
   }
 }
+
+void ecs_system_camera(struct EntityContainer* const ec, struct Entity* const e) {
+  if(ec->player != NULL) {
+    ec->cam.target.x = ec->player->trans_c->rect.x;
+    ec->cam.target.y = ec->player->trans_c->rect.y;
+  }
+}
