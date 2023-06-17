@@ -7,9 +7,12 @@
 #include "ecs.h"
 #include "util.h"
 
-// typedef enum {
-  // IN_GAME
-// } GameState;
+struct Game {
+  struct EntityContainer* world;
+};
+
+void Game_change_state(struct Game* const game) {
+}
 
 #define PORTAL_COUNT 10
 void randomly_place_portal(struct EntityContainer* world) {

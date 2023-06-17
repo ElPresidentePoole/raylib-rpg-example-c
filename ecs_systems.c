@@ -32,7 +32,7 @@ void ecs_system_despawn(struct EntityContainer* const ec, struct Entity* const e
     if(e->hp_c->hp <= 0) {
       ecs_entitycontainer_queue_for_freeing(ec, e);
       if(e->xpr_c != NULL) {
-	      ec->player->xpt_c->xp_total += e->xpr_c->xp_reward;
+	      if(ec->player != NULL) ec->player->xpt_c->xp_total += e->xpr_c->xp_reward;
       }
       if(e->inv_c != NULL) {
         struct Entity* coin_drop = e_coin_create(e->trans_c->rect.x, e->trans_c->rect.y, 1);

@@ -107,6 +107,8 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
     DrawTextEx(ec->game_font, TextFormat("Gold: %d", ec->player->inv_c->gold), (Vector2){10, 40}, 30.f, 0.1f, YELLOW);
     DrawTextEx(ec->game_font, TextFormat("HP: %d", ec->player->hp_c->hp), (Vector2){11, 71}, 30.f, 0.1f, BROWN);
     DrawTextEx(ec->game_font, TextFormat("HP: %d", ec->player->hp_c->hp), (Vector2){10, 70}, 30.f, 0.1f, RED);
+  } else {
+    DrawTextEx(ec->game_font, "Game Over", (Vector2) { 20, 20 }, 70.f, 0.1f, RED);
   }
 
   EndDrawing();
@@ -181,6 +183,7 @@ void ecs_entitycontainer_free_queued(struct EntityContainer* const ec) {
   for(int ri = 0; ri < MAX_ENTITIES; ri++) { // remove index
     if(ec->queued_for_free[ri] != NULL) { // Don't even try to remove it if it's already NULL!
       struct Entity* to_remove = ec->queued_for_free[ri];
+      if (to_remove == ec->player) ec->player = NULL; // special case for the player
       for(int ei = 0; ei < MAX_ENTITIES; ei++) { // entity index
         if(ec->entities[ei] == to_remove) {
           ecs_entity_free(ec->entities[ei]);
@@ -262,6 +265,8 @@ void ecs_entitycontainer_tick(struct EntityContainer* const ec) {
 }
 
 void e_control_run_towards_player(struct EntityContainer* const ec, struct Entity* const e) {
+  if(ec->player == NULL) return; // Don't bother if they're dead and gone
+
   static float cooldown = 2.f;
   cooldown -= GetFrameTime();
   if(get_distance(e->trans_c->rect.x, e->trans_c->rect.y, ec->player->trans_c->rect.x, ec->player->trans_c->rect.y) < TILE_SIZE) {

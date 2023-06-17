@@ -32,7 +32,7 @@ struct EntityContainer {
   void (*systems[MAX_SYSTEMS])(struct EntityContainer* const, struct Entity* const);
   Font game_font;
   Texture2D game_tileset;
-  struct Entity const* player; // this entity is very popular, so it would be best if we just held onto it
+  struct Entity* player; // this entity is very popular, so it would be best if we just held onto it
   Camera2D cam;
 };
 
