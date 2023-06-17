@@ -162,6 +162,14 @@ void ecs_entitycontainer_queue_for_freeing(struct EntityContainer* const ec, str
 
 }
 
+void ecs_entitycontainer_queue_everything_for_freeing(struct EntityContainer* const ec) {
+  for(int i = 0; i < MAX_ENTITIES; i++) {
+    if(ec->entities[i] != NULL) {
+      ecs_entitycontainer_queue_for_freeing(ec, ec->entities[i]);
+    }
+  }
+}
+
 bool ecs_entitycontainer_is_entity_queued_for_removal(struct EntityContainer* const ec, struct Entity* const e) {
   for(int i = 0; i < MAX_ENTITIES; i++) {
     if(ec->queued_for_free[i] == e) {

@@ -1,4 +1,4 @@
-HEADERS = ecs.h ecs_components.h ecs_systems.h util.h common_entities.h
+HEADERS = ecs.h ecs_components.h ecs_systems.h util.h common_entities.h scenes.h
 CC = gcc
 ifeq ($(TARGET), windows)
 	FLAGS = -g -lraylib -lopengl32 -lgdi32 -lwinmm -Wpedantic -std=c99 -Werror
@@ -7,6 +7,9 @@ else
 endif
 
 default: rpg
+
+scenes.o: scenes.c $(HEADERS)
+	$(CC) -c scenes.c -o scenes.o $(FLAGS)
 
 common_entities.o: common_entities.c $(HEADERS)
 	$(CC) -c common_entities.c -o common_entities.o $(FLAGS)
@@ -23,13 +26,14 @@ ecs.o: ecs.c $(HEADERS)
 main.o: main.c $(HEADERS)
 	$(CC) -c main.c -o main.o $(FLAGS)
 
-rpg: main.o ecs.o ecs_systems.o util.o common_entities.o
-	$(CC) main.o ecs.o ecs_systems.o util.o common_entities.o -o rpg $(FLAGS)
+rpg: main.o ecs.o ecs_systems.o util.o common_entities.o scenes.o
+	$(CC) main.o ecs.o ecs_systems.o util.o common_entities.o scenes.o -o rpg $(FLAGS)
 
 run:
 	./rpg
 
 clean:
+	-rm -f scenes.o
 	-rm -f common_entities.o
 	-rm -f util.o
 	-rm -f ecs_systems.o

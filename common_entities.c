@@ -126,7 +126,7 @@ struct Entity* e_missile_create(struct Entity* const player, Camera2D* cam) {
     missile->col_c->mask = 0;
     missile->col_c->hitbox = (Rectangle){player->trans_c->rect.x - TILE_SIZE / 2, player->trans_c->rect.y - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE};
     missile->col_c->break_on_impact = true;
-    missile->col_c->dmg = rand() % 2 + 2;
+    missile->col_c->dmg = rand() % 5 + 3;
     missile->tra_c = new(missile->tra_c);
     missile->tra_c->time_between_copies = 0.05f;
     missile->tra_c->remaining_copies = 15;

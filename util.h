@@ -5,6 +5,8 @@
 #include <raylib.h>
 
 #define new(ptr) malloc(sizeof(*ptr))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #define TILE_SIZE 32
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720

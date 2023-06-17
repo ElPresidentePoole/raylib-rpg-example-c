@@ -40,6 +40,7 @@ struct EntityContainer {
 struct EntityContainer* ecs_entitycontainer_create();
 void ecs_entitycontainer_push(struct EntityContainer* const ec, struct Entity* const e);
 void ecs_entitycontainer_queue_for_freeing(struct EntityContainer* const ec, struct Entity* const e);
+void ecs_entitycontainer_queue_everything_for_freeing(struct EntityContainer* const ec);
 void ecs_entitycontainer_free_queued(struct EntityContainer* const ec);
 void ecs_entitycontainer_free(struct EntityContainer* const ec);
 void ecs_entitycontainer_add_system(struct EntityContainer* const ec, void (*system)(struct EntityContainer*, struct Entity*));
