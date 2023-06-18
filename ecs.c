@@ -77,6 +77,12 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
       DrawRectangleRec(ec->entities[i]->col_c->hitbox, GREEN);
   }
 #endif
+#if ECS_CLI_DEBUG
+  for (int i = 0; i < MAX_ENTITIES; i++) {
+    if (ec->entities[i] != NULL && ec->entities[i]->cli_c)
+      DrawRectangleRec(ec->entities[i]->cli_c->clickbox, RED);
+  }
+#endif
 
   for (int i = 0; i < MAX_ENTITIES; i++) {
     if (ec->entities[i] != NULL) {
@@ -89,21 +95,20 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
               e->trans_c->origin, e->trans_c->angle, c);
         }
         if (e->lab_c != NULL) {
-          DrawTextEx(
-              ec->game_font, e->lab_c->text,
-              (Vector2){.x = e->trans_c->rect.x+1, .y = e->trans_c->rect.y+1}, 12,
-              0.1, BLACK);
-          DrawTextEx(
-              ec->game_font, e->lab_c->text,
-              (Vector2){.x = e->trans_c->rect.x, .y = e->trans_c->rect.y}, 12,
-              0.1, e->lab_c->color);
+          if (e->trans_c != NULL) {
+            DrawTextEx(
+                ec->game_font, e->lab_c->text,
+                (Vector2){.x = e->trans_c->rect.x+1, .y = e->trans_c->rect.y+1}, 12,
+                0.1, BLACK);
+            DrawTextEx(
+                ec->game_font, e->lab_c->text,
+                (Vector2){.x = e->trans_c->rect.x, .y = e->trans_c->rect.y}, 12,
+                0.1, e->lab_c->color);
+          }
+          if(e->cli_c != NULL) {
+            draw_text_with_bg(ec->game_font, e->lab_c->text, (Vector2){e->cli_c->clickbox.x, e->cli_c->clickbox.y}, 12, 0.1, e->lab_c->color, BLACK);
+          }
         }
-#if ECS_CLI_DEBUG
-  for (int i = 0; i < MAX_ENTITIES; i++) {
-    if (ec->entities[i] != NULL && ec->entities[i]->cli_c)
-      DrawRectangleRec(ec->entities[i]->cli_c->clickbox, RED);
-  }
-#endif
       }
     }
   }

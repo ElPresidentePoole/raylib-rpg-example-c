@@ -217,16 +217,10 @@ struct Entity* e_create_trail_ghost_from_entity(struct Entity* const e) {
 struct Entity* e_start_game_button(float x, float y) {
   struct Entity* button = ecs_entity_create();
   button->lab_c = new(button->lab_c);
-  button->lab_c->color = RED;
+  button->lab_c->color = BLACK;
   sprintf(button->lab_c->text, "%s", "Start Game"); // this is probably not good practice but oh well
-  button->trans_c = new(button->trans_c);
-  button->trans_c->angle = 0.f;
-  button->trans_c->angular_velocity = 0.f;
-  button->trans_c->velocity = VECTOR2_ZERO;
-  button->trans_c->origin = (Vector2){ 100.f, 100.f };
-  button->trans_c->rect = (Rectangle){ x, y, 200.f, 200.f };
   button->cli_c = new(button->cli_c);
-  button->cli_c->clickbox = (Rectangle){ x, y, 200.f, 200.f };
+  button->cli_c->clickbox = (Rectangle){ x, y, 100.f, 50.f };
   button->cli_c->on_click = &scene_in_game_setup;
   return button;
 }
