@@ -5,8 +5,8 @@
 void ecs_system_movement(struct EntityContainer* const ec, struct Entity* const e) {
   if (e->trans_c != NULL) {
     float dt = GetFrameTime();
-    e->trans_c->rect.x += e->trans_c->velocity.x * dt;
-    e->trans_c->rect.y += e->trans_c->velocity.y * dt;
+    e->trans_c->position.x += e->trans_c->velocity.x * dt;
+    e->trans_c->position.y += e->trans_c->velocity.y * dt;
     e->trans_c->angle += e->trans_c->angular_velocity * dt;
     if(e->col_c != NULL) {
       e->col_c->hitbox.x += e->trans_c->velocity.x * dt;
@@ -36,7 +36,7 @@ void ecs_system_despawn(struct EntityContainer* const ec, struct Entity* const e
 	      if(ec->player != NULL) ec->player->xpt_c->xp_total += e->xpr_c->xp_reward;
       }
       if(e->inv_c != NULL) {
-        struct Entity* coin_drop = e_coin_create(e->trans_c->rect.x, e->trans_c->rect.y, 1);
+        struct Entity* coin_drop = e_coin_create(e->trans_c->position.x, e->trans_c->position.y, 1);
         ecs_entitycontainer_push(ec, coin_drop);
       }
     }
@@ -64,12 +64,12 @@ void ecs_system_collision(struct EntityContainer* const ec, struct Entity* const
           if(e->col_c->dmg > 0 && ec->entities[i]->hp_c != NULL) {
             ec->entities[i]->hp_c->hp -= e->col_c->dmg;
             const char* label_text = TextFormat("%d", e->col_c->dmg);
-            struct Entity* label = e_label_create(ec->entities[i]->trans_c->rect.x, ec->entities[i]->trans_c->rect.y, label_text, RED);
+            struct Entity* label = e_label_create(ec->entities[i]->trans_c->position.x, ec->entities[i]->trans_c->position.y, label_text, RED);
             ecs_entitycontainer_push(ec, label);
           }
           if(e->pic_c != NULL && ec->entities[i]->inv_c != NULL) {
             ec->entities[i]->inv_c->gold += e->pic_c->gold_reward;
-            struct Entity* label = e_label_create(ec->entities[i]->trans_c->rect.x, ec->entities[i]->trans_c->rect.y, TextFormat("%d", e->pic_c->gold_reward), YELLOW);
+            struct Entity* label = e_label_create(ec->entities[i]->trans_c->position.x, ec->entities[i]->trans_c->position.y, TextFormat("%d", e->pic_c->gold_reward), YELLOW);
             ecs_entitycontainer_push(ec, label);
           }
         }
@@ -97,8 +97,8 @@ void ecs_system_controls(struct EntityContainer* const ec, struct Entity* const 
 
 void ecs_system_camera(struct EntityContainer* const ec, struct Entity* const e) {
   if(ec->player != NULL) {
-    ec->cam.target.x = ec->player->trans_c->rect.x;
-    ec->cam.target.y = ec->player->trans_c->rect.y;
+    ec->cam.target.x = ec->player->trans_c->position.x;
+    ec->cam.target.y = ec->player->trans_c->position.y;
   } else {
     ec->cam.target = VECTOR2_ZERO;
   }

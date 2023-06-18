@@ -4,6 +4,7 @@
 // Forward declarations
 // Component structs -- defined below
 struct TransformComponent;
+struct TextureComponent;
 struct VisibilityComponent;
 struct LifespanComponent;
 struct HealthComponent;
@@ -23,15 +24,18 @@ struct EntityContainer;
 
 // Component Definitions
 struct TransformComponent {
-  Rectangle rect;
+  Vector2 position;
   double angle;
   Vector2 origin;
   Vector2 velocity;
   double angular_velocity;
 };
 
-struct VisibilityComponent { // maybe should be called VisibilityComponent?
-  Rectangle rect;
+struct TextureComponent {
+  Rectangle source;
+};
+
+struct VisibilityComponent {
   unsigned char alpha;
   bool fading;
   int fade_per_second;

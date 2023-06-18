@@ -10,6 +10,7 @@
 
 struct Entity {
   struct TransformComponent* trans_c;
+  struct TextureComponent* tex_c;
   struct VisibilityComponent* vis_c;
   struct LifespanComponent* life_c;
   struct HealthComponent* hp_c;

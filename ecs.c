@@ -8,11 +8,12 @@
 #include <stdio.h>
 #include <stdbool.h>
 #define ECS_COL_DEBUG 0 // draw hitboxes
-#define ECS_CLI_DEBUG 1
+#define ECS_CLI_DEBUG 0
 
 struct Entity* ecs_entity_create() {
   struct Entity* e = new(e);
   e->trans_c = NULL;
+  e->tex_c = NULL;
   e->vis_c = NULL;
   e->life_c = NULL;
   e->hp_c = NULL;
@@ -32,6 +33,7 @@ struct Entity* ecs_entity_create() {
 
 void ecs_entity_free(struct Entity* const e) {
   if (e->trans_c != NULL) free(e->trans_c);
+  if (e->tex_c != NULL) free(e->tex_c);
   if (e->vis_c != NULL) free(e->vis_c);
   if (e->life_c != NULL) free(e->life_c);
   if (e->hp_c != NULL) free(e->hp_c);
@@ -86,28 +88,19 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
 
   for (int i = 0; i < MAX_ENTITIES; i++) {
     if (ec->entities[i] != NULL) {
-      struct Entity *e = ec->entities[i];
-      if (e->trans_c != NULL) {
-        if (e->vis_c != NULL) {
-          if (e->vis_c->fading) e->vis_c->alpha = MAX(e->vis_c->alpha - e->vis_c->fade_per_second * GetFrameTime(), 0);
-          Color c = {255, 255, 255, e->vis_c->alpha};
-          DrawTexturePro(ec->game_tileset, e->vis_c->rect, e->trans_c->rect,
-              e->trans_c->origin, e->trans_c->angle, c);
+      struct Entity* e = ec->entities[i];
+      if(e->vis_c != NULL && e->trans_c != NULL) {
+        if(e->vis_c->fading) e->vis_c->alpha = MAX(e->vis_c->alpha - e->vis_c->fade_per_second * GetFrameTime(), 0);
+        if(e->tex_c != NULL) {
+          Color white_transparent = {255, 255, 255, e->vis_c->alpha};
+          Rectangle dest = (Rectangle){ e->trans_c->position.x, e->trans_c->position.y, TILE_SIZE, TILE_SIZE };
+          DrawTexturePro(ec->game_tileset, e->tex_c->source, dest, e->trans_c->origin, e->trans_c->angle, white_transparent);
         }
-        if (e->lab_c != NULL) {
-          if (e->trans_c != NULL) {
-            DrawTextEx(
-                ec->game_font, e->lab_c->text,
-                (Vector2){.x = e->trans_c->rect.x+1, .y = e->trans_c->rect.y+1}, 12,
-                0.1, BLACK);
-            DrawTextEx(
-                ec->game_font, e->lab_c->text,
-                (Vector2){.x = e->trans_c->rect.x, .y = e->trans_c->rect.y}, 12,
-                0.1, e->lab_c->color);
-          }
-          if(e->cli_c != NULL) {
-            draw_text_with_bg(ec->game_font, e->lab_c->text, (Vector2){e->cli_c->clickbox.x, e->cli_c->clickbox.y}, 12, 0.1, e->lab_c->color, BLACK);
-          }
+
+        if(e->lab_c != NULL) {
+          Color label_color_with_alpha = (Color){ e->lab_c->color.r, e->lab_c->color.g, e->lab_c->color.b, e->vis_c->alpha };
+          Color black_with_alpha = (Color){ BLACK.r, BLACK.g, BLACK.b, e->vis_c->alpha };
+          draw_text_with_bg(ec->game_font, e->lab_c->text, e->trans_c->position, 30.f, 0.1f, label_color_with_alpha, black_with_alpha);
         }
       }
     }
@@ -129,9 +122,16 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
 }
 
 void on_timeout_spawn_troll(struct EntityContainer* const ec, struct Entity* const e) {
-  struct Entity* troll = e_troll_create(e->trans_c->rect.x, e->trans_c->rect.y);
+  static int remaining_trolls = 10; // shared between this function, not the caller :)
 
-  ecs_entitycontainer_push(ec, troll);
+  if(remaining_trolls > 0) {
+    struct Entity* troll = e_troll_create(e->trans_c->position.x, e->trans_c->position.y);
+
+    ecs_entitycontainer_push(ec, troll);
+    remaining_trolls--;
+  } else {
+    ecs_entitycontainer_queue_for_freeing(ec, e);
+  }
 }
 
 void ecs_entitycontainer_push(struct EntityContainer* const ec, struct Entity* const e) {
@@ -291,17 +291,17 @@ void e_control_run_towards_player(struct EntityContainer* const ec, struct Entit
 
   static float cooldown = 2.f;
   cooldown -= GetFrameTime();
-  if(get_distance(e->trans_c->rect.x, e->trans_c->rect.y, ec->player->trans_c->rect.x, ec->player->trans_c->rect.y) < TILE_SIZE) {
+  if(get_distance(e->trans_c->position.x, e->trans_c->position.y, ec->player->trans_c->position.x, ec->player->trans_c->position.y) < TILE_SIZE) { // FIXME: shouldn't we be getting the distance based off the pos+origin?
     e->trans_c->velocity = VECTOR2_ZERO;
     if(cooldown <= 0) {
       cooldown = 2.f;
-      struct Entity* troll_whack = e_hurtbox_create(e->trans_c->rect.x, e->trans_c->rect.y, 1);
+      struct Entity* troll_whack = e_hurtbox_create(e->trans_c->position.x, e->trans_c->position.y, 1);
       ecs_entitycontainer_push(ec, troll_whack);
     }
   } else {
     static const int TROLL_SPEED = 100;
-    int dx = e->trans_c->rect.x - ec->player->trans_c->rect.x;
-    int dy = e->trans_c->rect.y - ec->player->trans_c->rect.y;
+    int dx = e->trans_c->position.x - ec->player->trans_c->position.x;
+    int dy = e->trans_c->position.y - ec->player->trans_c->position.y;
     double angle_between_troll_and_target = atan2(dy, dx);
     struct Vector2 v2 = (Vector2){-cos(angle_between_troll_and_target), -sin(angle_between_troll_and_target)};
     v2.x *= TROLL_SPEED;
