@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #define ECS_COL_DEBUG 0 // draw hitboxes
+#define ECS_CLI_DEBUG 1
 
 struct Entity* ecs_entity_create() {
   struct Entity* e = new(e);
@@ -97,6 +98,12 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
               (Vector2){.x = e->trans_c->rect.x, .y = e->trans_c->rect.y}, 12,
               0.1, e->lab_c->color);
         }
+#if ECS_CLI_DEBUG
+  for (int i = 0; i < MAX_ENTITIES; i++) {
+    if (ec->entities[i] != NULL && ec->entities[i]->cli_c)
+      DrawRectangleRec(ec->entities[i]->cli_c->clickbox, RED);
+  }
+#endif
       }
     }
   }
@@ -109,9 +116,9 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
     DrawTextEx(ec->game_font, TextFormat("Gold: %d", ec->player->inv_c->gold), (Vector2){10, 40}, 30.f, 0.1f, YELLOW);
     DrawTextEx(ec->game_font, TextFormat("HP: %d", ec->player->hp_c->hp), (Vector2){11, 71}, 30.f, 0.1f, BROWN);
     DrawTextEx(ec->game_font, TextFormat("HP: %d", ec->player->hp_c->hp), (Vector2){10, 70}, 30.f, 0.1f, RED);
-  } else {
-    DrawTextEx(ec->game_font, "Game Over", (Vector2) { 20, 20 }, 70.f, 0.1f, RED);
-  }
+  } // else {
+    //DrawTextEx(ec->game_font, "Game Over", (Vector2) { 20, 20 }, 70.f, 0.1f, RED);
+  //}
 
   EndDrawing();
 }

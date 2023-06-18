@@ -17,7 +17,7 @@ struct TrailComponent;
 struct XpRewardComponent;
 struct XpTrackerComponent;
 struct ClickableComponent;
-struct CameraFollowComponent;
+struct CameraFollowComponent; // TODO: not implemented :)
 struct Entity;
 struct EntityContainer;
 
