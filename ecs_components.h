@@ -17,6 +17,7 @@ struct TrailComponent;
 struct XpRewardComponent;
 struct XpTrackerComponent;
 struct ClickableComponent;
+struct CameraFollowComponent;
 struct Entity;
 struct EntityContainer;
 
@@ -96,7 +97,8 @@ struct XpTrackerComponent {
 
 struct ClickableComponent {
   Rectangle clickbox;
-  void (*on_click)(struct EntityContainer* const, struct Entity* const);
+  void (*on_click)(struct EntityContainer* const);
 };
+
 
 #endif // ECS_COMPONENTS_H_

@@ -23,6 +23,7 @@ struct Entity {
   struct XpRewardComponent* xpr_c;
   struct XpTrackerComponent* xpt_c;
   struct ClickableComponent* cli_c;
+  struct CameraFollowComponent* camf_c;
 };
 
 // Entity Container

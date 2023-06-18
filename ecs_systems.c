@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "common_entities.h"
+#include "util.h"
 
 void ecs_system_movement(struct EntityContainer* const ec, struct Entity* const e) {
   if (e->trans_c != NULL) {
@@ -98,5 +99,15 @@ void ecs_system_camera(struct EntityContainer* const ec, struct Entity* const e)
   if(ec->player != NULL) {
     ec->cam.target.x = ec->player->trans_c->rect.x;
     ec->cam.target.y = ec->player->trans_c->rect.y;
+  } else {
+    ec->cam.target = VECTOR2_ZERO;
+  }
+}
+
+void ecs_system_buttons(struct EntityContainer* const ec, struct Entity* const e) {
+  if(e->cli_c != NULL) {
+    if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && CheckCollisionPointRec(GetScreenToWorld2D(GetMousePosition(), ec->cam), e->cli_c->clickbox)) {
+      e->cli_c->on_click(ec);
+    }
   }
 }

@@ -25,6 +25,7 @@ struct Entity* ecs_entity_create() {
   e->xpr_c = NULL;
   e->xpt_c = NULL;
   e->cli_c = NULL;
+  e->camf_c = NULL;
   return e;
 }
 
@@ -43,6 +44,7 @@ void ecs_entity_free(struct Entity* const e) {
   if (e->xpr_c != NULL) free(e->xpr_c);
   if (e->xpt_c != NULL) free(e->xpt_c);
   if (e->cli_c != NULL) free(e->cli_c);
+  if (e->camf_c != NULL) free(e->camf_c);
   free(e);
 }
 
