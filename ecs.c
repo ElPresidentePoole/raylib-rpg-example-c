@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #define ECS_COL_DEBUG 0 // draw hitboxes
-#define ECS_CLI_DEBUG 0
+#define ECS_CLI_DEBUG 1
 
 struct Entity* ecs_entity_create() {
   struct Entity* e = new(e);
@@ -81,8 +81,8 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
 #endif
 #if ECS_CLI_DEBUG
   for (int i = 0; i < MAX_ENTITIES; i++) {
-    if (ec->entities[i] != NULL && ec->entities[i]->cli_c)
-      DrawRectangleRec(ec->entities[i]->cli_c->clickbox, RED);
+    if (ec->entities[i] != NULL && ec->entities[i]->cli_c != NULL && ec->entities[i]->trans_c != NULL)
+      DrawRectangleRec((Rectangle){ec->entities[i]->trans_c->position.x, ec->entities[i]->trans_c->position.y, ec->entities[i]->cli_c->clickbox_width, ec->entities[i]->cli_c->clickbox_height}, RED);
   }
 #endif
 

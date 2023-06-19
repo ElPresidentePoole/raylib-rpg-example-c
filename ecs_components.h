@@ -19,6 +19,7 @@ struct XpRewardComponent;
 struct XpTrackerComponent;
 struct ClickableComponent;
 struct CameraFollowComponent; // TODO: not implemented :)
+// struct DimensionsComponent;
 struct Entity;
 struct EntityContainer;
 
@@ -100,9 +101,9 @@ struct XpTrackerComponent {
 };
 
 struct ClickableComponent {
-  Rectangle clickbox;
+  unsigned int clickbox_width;
+  unsigned int clickbox_height;
   void (*on_click)(struct EntityContainer* const);
 };
-
 
 #endif // ECS_COMPONENTS_H_

@@ -232,8 +232,15 @@ struct Entity* e_start_game_button(float x, float y) {
   button->vis_c->alpha = 255U;
   button->vis_c->fading = false;
   button->vis_c->fade_per_second = 0;
+  button->trans_c = new(button->trans_c);
+  button->trans_c->angle = 0.f;
+  button->trans_c->angular_velocity = 0.f;
+  button->trans_c->velocity = VECTOR2_ZERO;
+  button->trans_c->origin = (Vector2){ 50, 25 };
+  button->trans_c->position = (Vector2){ x, y };
   button->cli_c = new(button->cli_c);
-  button->cli_c->clickbox = (Rectangle){ x, y, 100.f, 50.f };  //  TODO: dimensions component width/height
+  button->cli_c->clickbox_width = 100.f;  //  TODO: dimensions component width/height
+  button->cli_c->clickbox_height = 50.f;  //  TODO: dimensions component width/height
   button->cli_c->on_click = &scene_in_game_setup;
   return button;
 }
