@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include "ecs_components.h"
 #include "ecs_systems.h"
+#include "ecs_structs.h"
 #define MAX_ENTITIES 4096 // this should probably just be a linked list but we're just gonna keep upping it until it doesn't crash often :)
 #define MAX_SYSTEMS 16
 

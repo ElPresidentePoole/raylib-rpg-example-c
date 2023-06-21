@@ -13,7 +13,7 @@ const unsigned int LAYER_TROLL = 4; // 0b00100
 const unsigned int LAYER_MISSILE = 2; // 0b00010
 const unsigned int LAYER_COIN = 1; // 0b00001
 
-struct Entity* e_player_create(float x, float y) {
+struct Entity* rpg_player_create(float x, float y) {
     struct Entity* player = ecs_entity_create();
     player->trans_c = new(player->trans_c);
     player->trans_c->position = (Vector2){x, y};
@@ -47,7 +47,7 @@ struct Entity* e_player_create(float x, float y) {
     return player;
 }
 
-struct Entity* e_portal_create(float x, float y) {
+struct Entity* rpg_portal_create(float x, float y) {
     struct Entity* portal = ecs_entity_create();
     portal->trans_c = new(portal->trans_c);
     portal->trans_c->position = (Vector2){x, y};
@@ -70,7 +70,7 @@ struct Entity* e_portal_create(float x, float y) {
     return portal;
 }
 
-struct Entity* e_troll_create(float x, float y) {
+struct Entity* rpg_troll_create(float x, float y) {
     struct Entity* enemy = ecs_entity_create();
     enemy->trans_c = new(enemy->trans_c);
     enemy->trans_c->position = (Vector2){x, y};
@@ -101,7 +101,7 @@ struct Entity* e_troll_create(float x, float y) {
     return enemy;
 }
 
-struct Entity* e_missile_create(struct Entity* const player, Camera2D* cam) {
+struct Entity* rpg_missile_create(struct Entity* const player, Camera2D* cam) {
     static const int MISSILE_SPEED = 400;
     struct Entity* missile = ecs_entity_create();
     Vector2 mouse_pos = GetScreenToWorld2D(GetMousePosition(), *cam);
@@ -137,7 +137,7 @@ struct Entity* e_missile_create(struct Entity* const player, Camera2D* cam) {
     return missile;
 }
 
-struct Entity* e_coin_create(float x, float y, int amount_of_gold) {
+struct Entity* rpg_coin_create(float x, float y, int amount_of_gold) {
     struct Entity* coin = ecs_entity_create();
 
     coin->trans_c = new(coin->trans_c);
@@ -164,7 +164,7 @@ struct Entity* e_coin_create(float x, float y, int amount_of_gold) {
     return coin;
 }
 
-struct Entity* e_label_create(float x, float y, const char* text, const Color col) {
+struct Entity* rpg_label_create(float x, float y, const char* text, const Color col) {
     assert(strlen(text) < 128);
     struct Entity* label = ecs_entity_create();
     label->lab_c = new(label->lab_c);
@@ -185,7 +185,7 @@ struct Entity* e_label_create(float x, float y, const char* text, const Color co
     return label;
 }
 
-struct Entity* e_hurtbox_create(float x, float y, int dmg) {
+struct Entity* rpg_hurtbox_create(float x, float y, int dmg) {
     struct Entity *troll_whack = ecs_entity_create();
     troll_whack->trans_c = new (troll_whack->trans_c);
     troll_whack->trans_c->position = (Vector2){x, y};
@@ -204,7 +204,7 @@ struct Entity* e_hurtbox_create(float x, float y, int dmg) {
     return troll_whack;
 }
 
-struct Entity* e_create_trail_ghost_from_entity(struct Entity* const e) {
+struct Entity* rpg_create_trail_ghost_from_entity(struct Entity* const e) {
     struct Entity* ghost = ecs_entity_create();
     ghost->trans_c = new (ghost->trans_c);
     ghost->trans_c->position = (Vector2){e->trans_c->position.x, e->trans_c->position.y};
@@ -223,7 +223,7 @@ struct Entity* e_create_trail_ghost_from_entity(struct Entity* const e) {
     return ghost;
 }
 
-struct Entity* e_start_game_button(float x, float y) {
+struct Entity* rpg_start_game_button(float x, float y) {
   struct Entity* button = ecs_entity_create();
   button->lab_c = new(button->lab_c);
   button->lab_c->color = BLACK;
@@ -239,8 +239,7 @@ struct Entity* e_start_game_button(float x, float y) {
   button->trans_c->origin = (Vector2){ 50, 25 };
   button->trans_c->position = (Vector2){ x, y };
   button->cli_c = new(button->cli_c);
-  button->cli_c->clickbox_width = 100.f;  //  TODO: dimensions component width/height
-  button->cli_c->clickbox_height = 50.f;  //  TODO: dimensions component width/height
   button->cli_c->on_click = &scene_in_game_setup;
+  button->cli_c->size = (struct Dimensions){100.f, 50.f};
   return button;
 }

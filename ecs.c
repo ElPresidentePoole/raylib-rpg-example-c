@@ -81,8 +81,10 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
 #endif
 #if ECS_CLI_DEBUG
   for (int i = 0; i < MAX_ENTITIES; i++) {
-    if (ec->entities[i] != NULL && ec->entities[i]->cli_c != NULL && ec->entities[i]->trans_c != NULL)
-      DrawRectangleRec((Rectangle){ec->entities[i]->trans_c->position.x, ec->entities[i]->trans_c->position.y, ec->entities[i]->cli_c->clickbox_width, ec->entities[i]->cli_c->clickbox_height}, RED);
+    if (ec->entities[i] != NULL && ec->entities[i]->cli_c != NULL && ec->entities[i]->trans_c != NULL) {
+      Rectangle draw_here = (Rectangle){ ec->entities[i]->trans_c->position.x, ec->entities[i]->trans_c->position.y, ec->entities[i]->cli_c->size.height, ec->entities[i]->cli_c->size.width };
+      DrawRectangleRec(draw_here, RED);
+    }
   }
 #endif
 
@@ -100,7 +102,15 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
         if(e->lab_c != NULL) {
           Color label_color_with_alpha = (Color){ e->lab_c->color.r, e->lab_c->color.g, e->lab_c->color.b, e->vis_c->alpha };
           Color black_with_alpha = (Color){ BLACK.r, BLACK.g, BLACK.b, e->vis_c->alpha };
-          draw_text_with_bg(ec->game_font, e->lab_c->text, e->trans_c->position, 30.f, 0.1f, label_color_with_alpha, black_with_alpha);
+          if(e->cli_c != NULL) { // draw button
+            Rectangle label_rect = (Rectangle){ ec->entities[i]->trans_c->position.x, ec->entities[i]->trans_c->position.y, ec->entities[i]->cli_c->size.height, ec->entities[i]->cli_c->size.width };
+            Vector2 text_size = MeasureTextEx( ec->game_font, e->lab_c->text, 30.f, 0.1);
+            Vector2 draw_here = (Vector2){ label_rect.x + label_rect.width / 2 - text_size.x / 2, label_rect.y + label_rect.height / 2 - text_size.y / 2 };
+
+            draw_text_with_bg(ec->game_font, e->lab_c->text, draw_here, 30.f, 0.1f, label_color_with_alpha, black_with_alpha);
+          } else { // draw label
+            draw_text_with_bg(ec->game_font, e->lab_c->text, e->trans_c->position, 30.f, 0.1f, label_color_with_alpha, black_with_alpha);
+          }
         }
       }
     }
@@ -125,7 +135,7 @@ void on_timeout_spawn_troll(struct EntityContainer* const ec, struct Entity* con
   static int remaining_trolls = 10; // shared between this function, not the caller :)
 
   if(remaining_trolls > 0) {
-    struct Entity* troll = e_troll_create(e->trans_c->position.x, e->trans_c->position.y);
+    struct Entity* troll = rpg_troll_create(e->trans_c->position.x, e->trans_c->position.y);
 
     ecs_entitycontainer_push(ec, troll);
     remaining_trolls--;
@@ -295,7 +305,7 @@ void e_control_run_towards_player(struct EntityContainer* const ec, struct Entit
     e->trans_c->velocity = VECTOR2_ZERO;
     if(cooldown <= 0) {
       cooldown = 2.f;
-      struct Entity* troll_whack = e_hurtbox_create(e->trans_c->position.x, e->trans_c->position.y, 1);
+      struct Entity* troll_whack = rpg_hurtbox_create(e->trans_c->position.x, e->trans_c->position.y, 1);
       ecs_entitycontainer_push(ec, troll_whack);
     }
   } else {
@@ -332,7 +342,7 @@ void e_control_player_controls(struct EntityContainer* const ec, struct Entity* 
   e->trans_c->velocity = pm_normal;
 
   if(IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cooldown <= 0.f) { 
-    struct Entity* missile = e_missile_create(e, &ec->cam);
+    struct Entity* missile = rpg_missile_create(e, &ec->cam);
     cooldown = 0.15f;
     ecs_entitycontainer_push(ec, missile);
   }

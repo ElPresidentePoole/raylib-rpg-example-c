@@ -1,6 +1,7 @@
 #ifndef ECS_COMPONENTS_H_
 #define ECS_COMPONENTS_H_
 #include <raylib.h>
+#include "ecs_structs.h"
 // Forward declarations
 // Component structs -- defined below
 struct TransformComponent;
@@ -19,7 +20,6 @@ struct XpRewardComponent;
 struct XpTrackerComponent;
 struct ClickableComponent;
 struct CameraFollowComponent; // TODO: not implemented :)
-// struct DimensionsComponent;
 struct Entity;
 struct EntityContainer;
 
@@ -101,9 +101,8 @@ struct XpTrackerComponent {
 };
 
 struct ClickableComponent {
-  unsigned int clickbox_width;
-  unsigned int clickbox_height;
   void (*on_click)(struct EntityContainer* const);
+  struct Dimensions size;
 };
 
 #endif // ECS_COMPONENTS_H_

@@ -1,4 +1,4 @@
-HEADERS = ecs.h ecs_components.h ecs_systems.h util.h common_entities.h scenes.h
+HEADERS = ecs.h ecs_components.h ecs_systems.h ecs_structs.h util.h common_entities.h scenes.h
 CC = gcc
 ifeq ($(TARGET), windows)
 	FLAGS = -g -lraylib -lopengl32 -lgdi32 -lwinmm -Wpedantic -std=c99 -Werror
