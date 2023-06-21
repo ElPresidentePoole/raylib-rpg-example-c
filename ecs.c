@@ -82,7 +82,7 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
 #if ECS_CLI_DEBUG
   for (int i = 0; i < MAX_ENTITIES; i++) {
     if (ec->entities[i] != NULL && ec->entities[i]->cli_c != NULL && ec->entities[i]->trans_c != NULL) {
-      Rectangle draw_here = (Rectangle){ ec->entities[i]->trans_c->position.x, ec->entities[i]->trans_c->position.y, ec->entities[i]->cli_c->size.height, ec->entities[i]->cli_c->size.width };
+      Rectangle draw_here = (Rectangle){ ec->entities[i]->trans_c->position.x, ec->entities[i]->trans_c->position.y, ec->entities[i]->cli_c->size.width, ec->entities[i]->cli_c->size.height };
       DrawRectangleRec(draw_here, RED);
     }
   }
@@ -104,8 +104,9 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
           Color black_with_alpha = (Color){ BLACK.r, BLACK.g, BLACK.b, e->vis_c->alpha };
           if(e->cli_c != NULL) { // draw button
             Rectangle label_rect = (Rectangle){ ec->entities[i]->trans_c->position.x, ec->entities[i]->trans_c->position.y, ec->entities[i]->cli_c->size.height, ec->entities[i]->cli_c->size.width };
-            Vector2 text_size = MeasureTextEx( ec->game_font, e->lab_c->text, 30.f, 0.1);
-            Vector2 draw_here = (Vector2){ label_rect.x + label_rect.width / 2 - text_size.x / 2, label_rect.y + label_rect.height / 2 - text_size.y / 2 };
+            // Vector2 text_size = MeasureTextEx( ec->game_font, e->lab_c->text, 30.f, 0.1);
+            // Vector2 draw_here = (Vector2){ label_rect.x + label_rect.width / 2 - text_size.x / 2, label_rect.y + label_rect.height / 2 - text_size.y / 2 };
+            Vector2 draw_here = (Vector2){ label_rect.x, label_rect.y};
 
             draw_text_with_bg(ec->game_font, e->lab_c->text, draw_here, 30.f, 0.1f, label_color_with_alpha, black_with_alpha);
           } else { // draw label

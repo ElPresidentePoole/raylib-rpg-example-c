@@ -226,7 +226,7 @@ struct Entity* rpg_create_trail_ghost_from_entity(struct Entity* const e) {
 struct Entity* rpg_start_game_button(float x, float y) {
   struct Entity* button = ecs_entity_create();
   button->lab_c = new(button->lab_c);
-  button->lab_c->color = BLACK;
+  button->lab_c->color = GOLD;
   sprintf(button->lab_c->text, "%s", "Start Game"); // this is probably not good practice but oh well
   button->vis_c = new(button->vis_c);
   button->vis_c->alpha = 255U;
