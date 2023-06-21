@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 #define ECS_COL_DEBUG 0 // draw hitboxes
-#define ECS_CLI_DEBUG 1
 
 struct Entity* ecs_entity_create() {
   struct Entity* e = new(e);
@@ -79,19 +78,11 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
       DrawRectangleRec(ec->entities[i]->col_c->hitbox, GREEN);
   }
 #endif
-#if ECS_CLI_DEBUG
-  for (int i = 0; i < MAX_ENTITIES; i++) {
-    if (ec->entities[i] != NULL && ec->entities[i]->cli_c != NULL && ec->entities[i]->trans_c != NULL) {
-      Rectangle draw_here = (Rectangle){ ec->entities[i]->trans_c->position.x, ec->entities[i]->trans_c->position.y, ec->entities[i]->cli_c->size.width, ec->entities[i]->cli_c->size.height };
-      DrawRectangleRec(draw_here, RED);
-    }
-  }
-#endif
 
   for (int i = 0; i < MAX_ENTITIES; i++) {
     if (ec->entities[i] != NULL) {
       struct Entity* e = ec->entities[i];
-      if(e->vis_c != NULL && e->trans_c != NULL) {
+      if(e->vis_c != NULL && e->trans_c != NULL && e->trans_c->uses_world_position) {
         if(e->vis_c->fading) e->vis_c->alpha = MAX(e->vis_c->alpha - e->vis_c->fade_per_second * GetFrameTime(), 0);
         if(e->tex_c != NULL) {
           Color white_transparent = {255, 255, 255, e->vis_c->alpha};
@@ -102,16 +93,7 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
         if(e->lab_c != NULL) {
           Color label_color_with_alpha = (Color){ e->lab_c->color.r, e->lab_c->color.g, e->lab_c->color.b, e->vis_c->alpha };
           Color black_with_alpha = (Color){ BLACK.r, BLACK.g, BLACK.b, e->vis_c->alpha };
-          if(e->cli_c != NULL) { // draw button
-            Rectangle label_rect = (Rectangle){ ec->entities[i]->trans_c->position.x, ec->entities[i]->trans_c->position.y, ec->entities[i]->cli_c->size.height, ec->entities[i]->cli_c->size.width };
-            // Vector2 text_size = MeasureTextEx( ec->game_font, e->lab_c->text, 30.f, 0.1);
-            // Vector2 draw_here = (Vector2){ label_rect.x + label_rect.width / 2 - text_size.x / 2, label_rect.y + label_rect.height / 2 - text_size.y / 2 };
-            Vector2 draw_here = (Vector2){ label_rect.x, label_rect.y};
-
-            draw_text_with_bg(ec->game_font, e->lab_c->text, draw_here, 30.f, 0.1f, label_color_with_alpha, black_with_alpha);
-          } else { // draw label
-            draw_text_with_bg(ec->game_font, e->lab_c->text, e->trans_c->position, 30.f, 0.1f, label_color_with_alpha, black_with_alpha);
-          }
+          draw_text_with_bg(ec->game_font, e->lab_c->text, e->trans_c->position, e->lab_c->size, 0.1f, label_color_with_alpha, black_with_alpha);
         }
       }
     }
@@ -119,15 +101,29 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
 
   EndMode2D();
   if(ec->player != NULL) {
-    DrawTextEx(ec->game_font, TextFormat("Level: %d | XP: %d/%d", ec->player->xpt_c->level, ec->player->xpt_c->xp_total, ec->player->xpt_c->xp_for_next_level), (Vector2){12, 12}, 30.f, 0.1f, DARKBLUE);
-    DrawTextEx(ec->game_font, TextFormat("Level: %d | XP: %d/%d", ec->player->xpt_c->level, ec->player->xpt_c->xp_total, ec->player->xpt_c->xp_for_next_level), (Vector2){10, 10}, 30.f, 0.1f, BLUE);
-    DrawTextEx(ec->game_font, TextFormat("Gold: %d", ec->player->inv_c->gold), (Vector2){11, 41}, 30.f, 0.1f, GOLD);
-    DrawTextEx(ec->game_font, TextFormat("Gold: %d", ec->player->inv_c->gold), (Vector2){10, 40}, 30.f, 0.1f, YELLOW);
-    DrawTextEx(ec->game_font, TextFormat("HP: %d", ec->player->hp_c->hp), (Vector2){11, 71}, 30.f, 0.1f, BROWN);
-    DrawTextEx(ec->game_font, TextFormat("HP: %d", ec->player->hp_c->hp), (Vector2){10, 70}, 30.f, 0.1f, RED);
+    draw_text_with_bg(ec->game_font, TextFormat("Level: %d | XP: %d/%d", ec->player->xpt_c->level, ec->player->xpt_c->xp_total, ec->player->xpt_c->xp_for_next_level), (Vector2){10, 10}, 30.f, 0.1f, BLUE, DARKBLUE);
+    draw_text_with_bg(ec->game_font, TextFormat("Gold: %d", ec->player->inv_c->gold), (Vector2){10, 40}, 30.f, 0.1f, YELLOW, GOLD);
+    draw_text_with_bg(ec->game_font, TextFormat("HP: %d", ec->player->hp_c->hp), (Vector2){10, 70}, 30.f, 0.1f, RED, BROWN);
   } // else {
     //DrawTextEx(ec->game_font, "Game Over", (Vector2) { 20, 20 }, 70.f, 0.1f, RED);
   //}
+  for (int i = 0; i < MAX_ENTITIES; i++) {
+    if (ec->entities[i] != NULL) {
+      struct Entity* e = ec->entities[i];
+      if(e->vis_c != NULL && e->trans_c != NULL && !e->trans_c->uses_world_position && e->cli_c != NULL) {
+        Rectangle label_rect = (Rectangle){ ec->entities[i]->trans_c->position.x, ec->entities[i]->trans_c->position.y, ec->entities[i]->cli_c->size.height, ec->entities[i]->cli_c->size.width };
+        // Vector2 text_size = MeasureTextEx( ec->game_font, e->lab_c->text, 30.f, 0.1);
+        // Vector2 draw_here = (Vector2){ label_rect.x + label_rect.width / 2 - text_size.x / 2, label_rect.y + label_rect.height / 2 - text_size.y / 2 };
+        Vector2 draw_here = (Vector2){ label_rect.x, label_rect.y};
+        Color label_color_with_alpha = (Color){ e->lab_c->color.r, e->lab_c->color.g, e->lab_c->color.b, e->vis_c->alpha };
+        Color black_with_alpha = (Color){ BLACK.r, BLACK.g, BLACK.b, e->vis_c->alpha };
+        printf("%s\n", e->lab_c->text);
+
+        DrawRectangleRec((Rectangle){ec->entities[i]->trans_c->position.x, ec->entities[i]->trans_c->position.y, ec->entities[i]->cli_c->size.width, ec->entities[i]->cli_c->size.height}, GREEN);
+        draw_text_with_bg(ec->game_font, e->lab_c->text, draw_here, e->lab_c->size, 0.1f, label_color_with_alpha, black_with_alpha);
+      }
+    }
+  }
 
   EndDrawing();
 }

@@ -1,12 +1,13 @@
 #ifndef ECS_COMPONENTS_H_
 #define ECS_COMPONENTS_H_
 #include <raylib.h>
+#include <stdbool.h>
 #include "ecs_structs.h"
 // Forward declarations
 // Component structs -- defined below
 struct TransformComponent;
 struct TextureComponent;
-struct VisibilityComponent;
+struct VisibilityComponent; // should this be renamed to "AlphaComponent" or something?
 struct LifespanComponent;
 struct HealthComponent;
 struct CollisionComponent;
@@ -26,6 +27,7 @@ struct EntityContainer;
 // Component Definitions
 struct TransformComponent {
   Vector2 position;
+  bool uses_world_position; // Indicates if the TransformComponent position is used for world position or screen position
   double angle;
   Vector2 origin;
   Vector2 velocity;
@@ -60,6 +62,7 @@ struct CollisionComponent {
 
 struct LabelComponent {
   char text[128]; // hope that's enough lol
+  float size;
   Color color;
 };
 

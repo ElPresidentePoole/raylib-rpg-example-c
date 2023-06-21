@@ -106,7 +106,8 @@ void ecs_system_camera(struct EntityContainer* const ec, struct Entity* const e)
 
 void ecs_system_buttons(struct EntityContainer* const ec, struct Entity* const e) {
   if(e->cli_c != NULL) {
-    if(CheckCollisionPointRec(GetScreenToWorld2D(GetMousePosition(), ec->cam), (Rectangle){e->trans_c->position.x, e->trans_c->position.y, e->cli_c->size.width, e->cli_c->size.height})) {
+    // if(CheckCollisionPointRec(GetScreenToWorld2D(GetMousePosition(), ec->cam), (Rectangle){e->trans_c->position.x, e->trans_c->position.y, e->cli_c->size.width, e->cli_c->size.height})) {
+    if(CheckCollisionPointRec(GetMousePosition(), (Rectangle){e->trans_c->position.x, e->trans_c->position.y, e->cli_c->size.width, e->cli_c->size.height})) {
       // TODO: change color on hover
       if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         e->cli_c->on_click(ec);

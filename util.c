@@ -10,7 +10,7 @@ float get_distance(float x1, float y1, float x2, float y2) {
     return sqrtf(powf(x2 - x1, 2) + powf(y2 - y1, 2));
 }
 
-void draw_text_with_bg(Font f, char* text, Vector2 dest, float size, float spacing, Color fg, Color bg) {
-  DrawTextEx(f, text, (Vector2){.x = dest.x+1, .y = dest.y+1}, 12, 0.1, bg);
-  DrawTextEx(f, text, dest, 12, 0.1, fg);
+void draw_text_with_bg(Font f, const char* text, Vector2 dest, float size, float spacing, Color fg, Color bg) {
+  DrawTextEx(f, text, (Vector2){.x = dest.x+1, .y = dest.y+1}, size, spacing, bg);
+  DrawTextEx(f, text, dest, size, spacing, fg);
 }

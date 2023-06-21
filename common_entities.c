@@ -17,6 +17,7 @@ struct Entity* rpg_player_create(float x, float y) {
     struct Entity* player = ecs_entity_create();
     player->trans_c = new(player->trans_c);
     player->trans_c->position = (Vector2){x, y};
+    player->trans_c->uses_world_position = true;
     player->trans_c->angle = 0.0;
     player->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.0, .y = TILE_SIZE / 2.0};
     player->trans_c->velocity = (Vector2){0, 0};
@@ -170,10 +171,12 @@ struct Entity* rpg_label_create(float x, float y, const char* text, const Color 
     label->lab_c = new(label->lab_c);
     sprintf(label->lab_c->text, "%s", text); // this is probably not good practice but oh well
     label->lab_c->color = col;
+    label->lab_c->size = 12.f;
     label->trans_c = new(label->trans_c);
     label->trans_c->angle = 0.f;
     label->trans_c->origin = (Vector2){TILE_SIZE / 2.f, TILE_SIZE / 2.f};
     label->trans_c->position = (Vector2){x, y};
+    label->trans_c->uses_world_position = true;
     label->trans_c->velocity = (Vector2){.x = 0, .y = -50};
     label->trans_c->angular_velocity = 0;
     label->life_c = new(label->life_c);
@@ -189,6 +192,7 @@ struct Entity* rpg_hurtbox_create(float x, float y, int dmg) {
     struct Entity *troll_whack = ecs_entity_create();
     troll_whack->trans_c = new (troll_whack->trans_c);
     troll_whack->trans_c->position = (Vector2){x, y};
+    troll_whack->trans_c->uses_world_position = true;
     troll_whack->trans_c->angle = 0;
     troll_whack->trans_c->origin = (Vector2){.x = TILE_SIZE / 2, .y = TILE_SIZE / 2};
     troll_whack->trans_c->velocity = VECTOR2_ZERO;
@@ -208,6 +212,7 @@ struct Entity* rpg_create_trail_ghost_from_entity(struct Entity* const e) {
     struct Entity* ghost = ecs_entity_create();
     ghost->trans_c = new (ghost->trans_c);
     ghost->trans_c->position = (Vector2){e->trans_c->position.x, e->trans_c->position.y};
+    ghost->trans_c->uses_world_position = true;
     ghost->trans_c->angle = e->trans_c->angle;
     ghost->trans_c->origin = (Vector2){e->trans_c->origin.x, e->trans_c->origin.y};
     ghost->trans_c->velocity = VECTOR2_ZERO;
@@ -227,6 +232,7 @@ struct Entity* rpg_start_game_button(float x, float y) {
   struct Entity* button = ecs_entity_create();
   button->lab_c = new(button->lab_c);
   button->lab_c->color = GOLD;
+  button->lab_c->size = 24.f;
   sprintf(button->lab_c->text, "%s", "Start Game"); // this is probably not good practice but oh well
   button->vis_c = new(button->vis_c);
   button->vis_c->alpha = 255U;
@@ -238,8 +244,9 @@ struct Entity* rpg_start_game_button(float x, float y) {
   button->trans_c->velocity = VECTOR2_ZERO;
   button->trans_c->origin = (Vector2){ 50, 25 };
   button->trans_c->position = (Vector2){ x, y };
+  button->trans_c->uses_world_position = false;
   button->cli_c = new(button->cli_c);
   button->cli_c->on_click = &scene_in_game_setup;
-  button->cli_c->size = (struct Dimensions){100.f, 50.f};
+  button->cli_c->size = (struct Dimensions){200.f, 100.f};
   return button;
 }
