@@ -56,6 +56,7 @@ struct Entity* rpg_portal_create(float x, float y) {
     portal->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.0, .y = TILE_SIZE / 2.0};
     portal->trans_c->velocity = VECTOR2_ZERO;
     portal->trans_c->angular_velocity = 0.f; 
+    portal->trans_c->uses_world_position = true;
     portal->tex_c = new(portal->tex_c);
     portal->tex_c->source = (Rectangle){.x = 55 * TILE_SIZE, .y = 12 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
     portal->alp_c = new(portal->alp_c);
@@ -148,6 +149,7 @@ struct Entity* rpg_coin_create(float x, float y, int amount_of_gold) {
     coin->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.f, .y = TILE_SIZE / 2.f};
     coin->trans_c->velocity = VECTOR2_ZERO;
     coin->trans_c->angular_velocity = 0.f; 
+    coin->trans_c->uses_world_position = true;
     coin->tex_c = new(coin->tex_c);
     coin->tex_c->source = (Rectangle){.x = 41 * TILE_SIZE, .y = 40 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
     coin->alp_c = new(coin->alp_c);
