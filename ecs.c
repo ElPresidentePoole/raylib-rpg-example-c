@@ -87,7 +87,6 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
         if(e->alp_c != NULL && e->alp_c->fading) {
           e->alp_c->alpha = MAX(e->alp_c->alpha - e->alp_c->fade_per_second * GetFrameTime(), 0);
           draw_alpha = e->alp_c->alpha;
-          printf("%d\n", draw_alpha);
         }
         if(e->tex_c != NULL) {
           Color white_transparent = {255, 255, 255, draw_alpha};
@@ -117,14 +116,14 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
       struct Entity* e = ec->entities[i];
       if(e->trans_c != NULL && !e->trans_c->uses_world_position) {
         unsigned char draw_alpha = 255U;
+        if(e->cli_c != NULL) {
+          Rectangle button_rect = (Rectangle){e->trans_c->position.x, e->trans_c->position.y, e->cli_c->size.width, e->cli_c->size.height};
+          DrawRectangleRec(button_rect, GREEN);
+        }
         if(e->lab_c != NULL) {
           Color fg_color = (Color){e->lab_c->color.r, e->lab_c->color.g, e->lab_c->color.b, draw_alpha};
           Color bg_color = (Color){BLACK.r, BLACK.g, BLACK.b, draw_alpha};
           draw_text_with_bg(ec->game_font, e->lab_c->text, e->trans_c->position, e->lab_c->size, 0.1f, fg_color, bg_color);
-        }
-        if(e->cli_c != NULL) {
-          Rectangle button_rect = (Rectangle){e->trans_c->position.x, e->trans_c->position.y, e->cli_c->size.width, e->cli_c->size.height};
-          DrawRectangleRec(button_rect, GREEN);
         }
       }
     }
