@@ -24,10 +24,10 @@ struct Entity* rpg_player_create(float x, float y) {
     player->trans_c->angular_velocity = 0.0;
     player->tex_c = new(player->tex_c);
     player->tex_c->source = (Rectangle){.x = 6 * TILE_SIZE, .y = 79 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
-    player->vis_c = new(player->vis_c);
-    player->vis_c->alpha = 255U;
-    player->vis_c->fading = false;
-    player->vis_c->fade_per_second = 0;
+    player->alp_c = new(player->alp_c);
+    player->alp_c->alpha = 255U;
+    player->alp_c->fading = false;
+    player->alp_c->fade_per_second = 0;
     player->col_c = new(player->col_c);
     player->col_c->layer = LAYER_PLAYER;
     player->col_c->mask = LAYER_COIN | LAYER_ENEMY_HURTBOX;
@@ -58,10 +58,10 @@ struct Entity* rpg_portal_create(float x, float y) {
     portal->trans_c->angular_velocity = 0.f; 
     portal->tex_c = new(portal->tex_c);
     portal->tex_c->source = (Rectangle){.x = 55 * TILE_SIZE, .y = 12 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
-    portal->vis_c = new(portal->vis_c);
-    portal->vis_c->alpha = 255U;
-    portal->vis_c->fading = false;
-    portal->vis_c->fade_per_second = 0;
+    portal->alp_c = new(portal->alp_c);
+    portal->alp_c->alpha = 255U;
+    portal->alp_c->fading = false;
+    portal->alp_c->fade_per_second = 0;
     portal->tim_c = new(portal->tim_c);
     portal->tim_c->active = true;
     portal->tim_c->interval = 1.f;
@@ -79,14 +79,15 @@ struct Entity* rpg_troll_create(float x, float y) {
     enemy->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.0, .y = TILE_SIZE / 2.0};
     enemy->trans_c->velocity = (Vector2){0, 0};
     enemy->trans_c->angular_velocity = 0;
+    enemy->trans_c->uses_world_position = true;
     enemy->hp_c = new(enemy->hp_c);
     enemy->hp_c->hp = 5;
     enemy->tex_c = new(enemy->tex_c);
     enemy->tex_c->source = (Rectangle){.x = 2 * TILE_SIZE, .y = 77 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
-    enemy->vis_c = new(enemy->vis_c);
-    enemy->vis_c->alpha = 255U;
-    enemy->vis_c->fading = false;
-    enemy->vis_c->fade_per_second = 0;
+    enemy->alp_c = new(enemy->alp_c);
+    enemy->alp_c->alpha = 255U;
+    enemy->alp_c->fading = false;
+    enemy->alp_c->fade_per_second = 0;
     enemy->col_c = new(enemy->col_c);
     enemy->col_c->layer = LAYER_TROLL;
     enemy->col_c->mask = LAYER_MISSILE;
@@ -117,11 +118,11 @@ struct Entity* rpg_missile_create(struct Entity* const player, Camera2D* cam) {
     missile->trans_c->position = (Vector2){player->trans_c->position.x, player->trans_c->position.y};
     missile->trans_c->angle = angle_between_player_and_mouse * 180 / 3.1416 - 135;
     missile->trans_c->origin = (Vector2){.x = (float)TILE_SIZE / 2, .y = (float)TILE_SIZE / 2};
-    missile->vis_c = new(missile->vis_c);
-    // missile->vis_c->rect = (Rectangle){.x = 15 * TILE_SIZE, .y = 31 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
-    missile->vis_c->alpha = 255U;
-    missile->vis_c->fading = false;
-    missile->vis_c->fade_per_second = 0;
+    missile->alp_c = new(missile->alp_c);
+    // missile->alp_c->rect = (Rectangle){.x = 15 * TILE_SIZE, .y = 31 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
+    missile->alp_c->alpha = 255U;
+    missile->alp_c->fading = false;
+    missile->alp_c->fade_per_second = 0;
     missile->tex_c = new(missile->tex_c);
     missile->tex_c->source = (Rectangle){.x = 63 * TILE_SIZE, .y = 46 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
     missile->life_c = new(missile->life_c);
@@ -149,10 +150,10 @@ struct Entity* rpg_coin_create(float x, float y, int amount_of_gold) {
     coin->trans_c->angular_velocity = 0.f; 
     coin->tex_c = new(coin->tex_c);
     coin->tex_c->source = (Rectangle){.x = 41 * TILE_SIZE, .y = 40 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
-    coin->vis_c = new(coin->vis_c);
-    coin->vis_c->alpha = 255U;
-    coin->vis_c->fading = false;
-    coin->vis_c->fade_per_second = 0;
+    coin->alp_c = new(coin->alp_c);
+    coin->alp_c->alpha = 255U;
+    coin->alp_c->fading = false;
+    coin->alp_c->fade_per_second = 0;
     coin->col_c = new(coin->col_c);
     coin->col_c->layer = LAYER_COIN;
     coin->col_c->mask = 0;
@@ -181,10 +182,10 @@ struct Entity* rpg_label_create(float x, float y, const char* text, const Color 
     label->trans_c->angular_velocity = 0;
     label->life_c = new(label->life_c);
     label->life_c->time_remaining = 2.f;
-    label->vis_c = new(label->vis_c);
-    label->vis_c->alpha = 255U;
-    label->vis_c->fading = true;
-    label->vis_c->fade_per_second = 255U  / 2U;
+    label->alp_c = new(label->alp_c);
+    label->alp_c->alpha = 255U;
+    label->alp_c->fading = true;
+    label->alp_c->fade_per_second = 255U  / 2U;
     return label;
 }
 
@@ -221,10 +222,10 @@ struct Entity* rpg_create_trail_ghost_from_entity(struct Entity* const e) {
     ghost->life_c->time_remaining = 0.5f; // would TrailComponents cause a muckup if the Entity is freed?
     ghost->tex_c = new(ghost->tex_c);
     ghost->tex_c->source = (Rectangle){e->tex_c->source.x, e->tex_c->source.y, TILE_SIZE, TILE_SIZE};
-    ghost->vis_c = new(ghost->vis_c);
-    ghost->vis_c->alpha = 255U;
-    ghost->vis_c->fading = true;
-    ghost->vis_c->fade_per_second = 255 / ghost->life_c->time_remaining; // this shouldn't be a float though
+    ghost->alp_c = new(ghost->alp_c);
+    ghost->alp_c->alpha = 255U;
+    ghost->alp_c->fading = true;
+    ghost->alp_c->fade_per_second = 255 / ghost->life_c->time_remaining; // this shouldn't be a float though
     return ghost;
 }
 
@@ -234,10 +235,10 @@ struct Entity* rpg_start_game_button(float x, float y) {
   button->lab_c->color = GOLD;
   button->lab_c->size = 24.f;
   sprintf(button->lab_c->text, "%s", "Start Game"); // this is probably not good practice but oh well
-  button->vis_c = new(button->vis_c);
-  button->vis_c->alpha = 255U;
-  button->vis_c->fading = false;
-  button->vis_c->fade_per_second = 0;
+  button->alp_c = new(button->alp_c);
+  button->alp_c->alpha = 255U;
+  button->alp_c->fading = false;
+  button->alp_c->fade_per_second = 0;
   button->trans_c = new(button->trans_c);
   button->trans_c->angle = 0.f;
   button->trans_c->angular_velocity = 0.f;

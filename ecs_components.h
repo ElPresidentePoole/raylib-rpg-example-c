@@ -7,7 +7,7 @@
 // Component structs -- defined below
 struct TransformComponent;
 struct TextureComponent;
-struct VisibilityComponent; // should this be renamed to "AlphaComponent" or something?
+struct AlphaComponent; // should this be renamed to "AlphaComponent" or something?
 struct LifespanComponent;
 struct HealthComponent;
 struct CollisionComponent;
@@ -38,7 +38,7 @@ struct TextureComponent {
   Rectangle source;
 };
 
-struct VisibilityComponent {
+struct AlphaComponent {
   unsigned char alpha;
   bool fading;
   int fade_per_second;

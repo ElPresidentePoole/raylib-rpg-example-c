@@ -12,7 +12,7 @@
 struct Entity {
   struct TransformComponent* trans_c;
   struct TextureComponent* tex_c;
-  struct VisibilityComponent* vis_c;
+  struct AlphaComponent* alp_c;
   struct LifespanComponent* life_c;
   struct HealthComponent* hp_c;
   struct CollisionComponent* col_c;
