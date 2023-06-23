@@ -67,7 +67,7 @@ struct Entity* rpg_portal_create(float x, float y) {
     portal->tim_c->active = true;
     portal->tim_c->interval = 1.f;
     portal->tim_c->time_remaining = 1.f;
-    portal->tim_c->repeating = true;
+    portal->tim_c->repetitions = 2;
     portal->tim_c->on_timeout = &on_timeout_spawn_troll;
     return portal;
 }

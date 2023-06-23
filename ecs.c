@@ -133,16 +133,10 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
 }
 
 void on_timeout_spawn_troll(struct EntityContainer* const ec, struct Entity* const e) {
-  static int remaining_trolls = 10; // shared between this function, not the caller :)
+  struct Entity* troll = rpg_troll_create(e->trans_c->position.x, e->trans_c->position.y);
 
-  if(remaining_trolls > 0) {
-    struct Entity* troll = rpg_troll_create(e->trans_c->position.x, e->trans_c->position.y);
-
-    ecs_entitycontainer_push(ec, troll);
-    remaining_trolls--;
-  } else {
-    ecs_entitycontainer_queue_for_freeing(ec, e);
-  }
+  ecs_entitycontainer_push(ec, troll);
+  // ecs_entitycontainer_queue_for_freeing(ec, e);
 }
 
 void ecs_entitycontainer_push(struct EntityContainer* const ec, struct Entity* const e) {

@@ -68,7 +68,7 @@ struct LabelComponent {
 
 struct TimerComponent {
   bool active;
-  bool repeating;
+  int repetitions;
   float time_remaining;
   float interval;
   void (*on_timeout)(struct EntityContainer* const, struct Entity* const);

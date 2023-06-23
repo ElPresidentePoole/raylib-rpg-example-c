@@ -81,10 +81,13 @@ void ecs_system_collision(struct EntityContainer* const ec, struct Entity* const
 void ecs_system_timers(struct EntityContainer* const ec, struct Entity* const e) {
   if(e->tim_c != NULL && e->tim_c->active) {
     struct TimerComponent* our_timer = e->tim_c;
-    our_timer->time_remaining -= GetFrameTime();
-    if(our_timer->time_remaining <= 0) {
-      our_timer->on_timeout(ec, e);
-      if(our_timer->repeating) our_timer->time_remaining = our_timer->interval;
+    if(our_timer->repetitions > 0 || our_timer->repetitions == -1) { // -1 is our magic number for "always repeat"
+      our_timer->time_remaining -= GetFrameTime();
+      if(our_timer->time_remaining <= 0) {
+        our_timer->on_timeout(ec, e);
+        our_timer->time_remaining += our_timer->interval;
+        if(our_timer->repetitions > 0) our_timer->repetitions--;
+      }
     }
   }
 }
