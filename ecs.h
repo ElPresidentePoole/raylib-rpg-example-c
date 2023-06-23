@@ -6,7 +6,7 @@
 #include "ecs_components.h"
 #include "ecs_systems.h"
 #include "ecs_structs.h"
-#define MAX_ENTITIES 4096 // this should probably just be a linked list but we're just gonna keep upping it until it doesn't crash often :)
+#define MAX_ENTITIES_INITIAL 1024
 #define MAX_SYSTEMS 16
 
 struct Entity {
@@ -30,8 +30,9 @@ struct Entity {
 
 // Entity Container
 struct EntityContainer {
-  struct Entity* entities[MAX_ENTITIES];
-  struct Entity* queued_for_free[MAX_ENTITIES];
+  unsigned long max_entities;
+  struct Entity** entities;
+  struct Entity** queued_for_free;
   void (*systems[MAX_SYSTEMS])(struct EntityContainer* const, struct Entity* const);
   Font game_font;
   Texture2D game_tileset;

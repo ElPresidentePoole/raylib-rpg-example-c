@@ -56,7 +56,7 @@ void ecs_system_experience(struct EntityContainer* const ec, struct Entity* cons
 
 void ecs_system_collision(struct EntityContainer* const ec, struct Entity* const e) {
   if(e->col_c != NULL) {
-    for(int i = 0; i < MAX_ENTITIES; i++) {
+    for(int i = 0; i < ec->max_entities; i++) {
       if(ec->entities[i] != NULL && ec->entities[i]->col_c != NULL) {
         if((e->col_c->layer & ec->entities[i]->col_c->mask) > 0 && CheckCollisionRecs(e->col_c->hitbox, ec->entities[i]->col_c->hitbox)) {
           // should it be e->col_c->mask & ec->entities[i]->col_c->layer or e->col_c->layer & ec->entities[i]->col_c->mask ?

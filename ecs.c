@@ -73,13 +73,13 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
   }
 
 #if ECS_COL_DEBUG
-  for (int i = 0; i < MAX_ENTITIES; i++) {
+  for (int i = 0; i < ec->max_entities; i++) {
     if (ec->entities[i] != NULL && ec->entities[i]->col_c)
       DrawRectangleRec(ec->entities[i]->col_c->hitbox, GREEN);
   }
 #endif
 
-  for (int i = 0; i < MAX_ENTITIES; i++) {
+  for (int i = 0; i < ec->max_entities; i++) {
     if (ec->entities[i] != NULL) {
       struct Entity* e = ec->entities[i];
       if(e->trans_c != NULL && e->trans_c->uses_world_position) {
@@ -111,7 +111,7 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
   } // else {
     //DrawTextEx(ec->game_font, "Game Over", (Vector2) { 20, 20 }, 70.f, 0.1f, RED);
   //}
-  for (int i = 0; i < MAX_ENTITIES; i++) {
+  for (int i = 0; i < ec->max_entities; i++) {
     if (ec->entities[i] != NULL) {
       struct Entity* e = ec->entities[i];
       if(e->trans_c != NULL && !e->trans_c->uses_world_position) {
@@ -141,7 +141,7 @@ void on_timeout_spawn_troll(struct EntityContainer* const ec, struct Entity* con
 
 void ecs_entitycontainer_push(struct EntityContainer* const ec, struct Entity* const e) {
   bool found_spot = false;
-  for(int i = 0; i < MAX_ENTITIES && !found_spot; i++) {
+  for(int i = 0; i < ec->max_entities && !found_spot; i++) {
     if(ec->entities[i] == NULL) {
       ec->entities[i] = e;
       found_spot = true; // We found a place and don't need to continue any further.
@@ -149,20 +149,48 @@ void ecs_entitycontainer_push(struct EntityContainer* const ec, struct Entity* c
   }
 
   if(!found_spot) {
-    printf("Unable to push entity; couldn't find a free spot.\n");
+    // unsigned long previous_size = ec->max_entities;
+    unsigned long old_size = ec->max_entities;
+    unsigned long new_size = ec->max_entities * 2;
+    struct Entity** new_entities = realloc(ec->entities, new_size * sizeof(struct Entity*));
+    if(new_entities == NULL) {
+      printf("Unable to push entity; couldn't realloc more memory for entities.\n");
+      exit(1);
+    }
+    // We just allocated (potential) garbage.  Let's clean up!
+    for(unsigned long i = ec->max_entities; i < new_size; i++) {
+      new_entities[i] = NULL;
+    }
+
+    struct Entity** new_queued_for_free = realloc(ec->queued_for_free, new_size * sizeof(struct Entity*));
+    if(new_queued_for_free == NULL) {
+      printf("Unable to push entity; couldn't realloc more memory for queued_for_free.\n");
+      exit(1);
+    }
+    // We just allocated (potential) garbage.  Let's clean up!
+    for(unsigned long i = ec->max_entities; i < new_size; i++) {
+      new_queued_for_free[i] = NULL;
+    }
+
+    ec->entities = new_entities;
+    ec->queued_for_free = new_queued_for_free;
+    ec->max_entities = new_size;
+    printf("Successfully resized ec->entities to %lu", ec->max_entities);
+    ec->entities[old_size] = e;
+    /*
     printf("Current pointers in ec->entities: ");
-    for(int i = 0; i < MAX_ENTITIES; i++) {
+    for(int i = 0; i < ec->max_entities; i++) {
       printf(" %p, \n", (void*)ec->entities[i]);
     }
     printf("\ne: %p", (void*)e);
-    exit(1);
+    exit(1);*/
   }
   // ecs_entity_free(e);
 }
 
 void ecs_entitycontainer_queue_for_freeing(struct EntityContainer* const ec, struct Entity* const e) {
   if(!ecs_entitycontainer_is_entity_queued_for_removal(ec, e)) {
-    for(int i = 0; i < MAX_ENTITIES; i++) { // XXX: do we need to check if our entities array already contains e?
+    for(int i = 0; i < ec->max_entities; i++) { // XXX: do we need to check if our entities array already contains e?
       if(ec->queued_for_free[i] == NULL) {
         ec->queued_for_free[i] = e;
         return; // We found a place and don't need to continue any further.
@@ -170,7 +198,7 @@ void ecs_entitycontainer_queue_for_freeing(struct EntityContainer* const ec, str
     }
     /* printf("Unable to queue entity for removal; couldn't find a free spot.\n"); */
     /* printf("Current pointers in ec->entities: "); */
-    /* for(int i = 0; i < MAX_ENTITIES; i++) { */
+    /* for(int i = 0; i < ec->max_entities; i++) { */
     /*   printf(" %p, ", (void*)ec->entities[i]); */
     /* } */
     /* printf("\ne: %p", (void*)e); */
@@ -182,7 +210,7 @@ void ecs_entitycontainer_queue_for_freeing(struct EntityContainer* const ec, str
 }
 
 void ecs_entitycontainer_queue_everything_for_freeing(struct EntityContainer* const ec) {
-  for(int i = 0; i < MAX_ENTITIES; i++) {
+  for(int i = 0; i < ec->max_entities; i++) {
     if(ec->entities[i] != NULL) {
       ecs_entitycontainer_queue_for_freeing(ec, ec->entities[i]);
     }
@@ -190,7 +218,7 @@ void ecs_entitycontainer_queue_everything_for_freeing(struct EntityContainer* co
 }
 
 bool ecs_entitycontainer_is_entity_queued_for_removal(struct EntityContainer* const ec, struct Entity* const e) {
-  for(int i = 0; i < MAX_ENTITIES; i++) {
+  for(int i = 0; i < ec->max_entities; i++) {
     if(ec->queued_for_free[i] == e) {
       return true;
     }
@@ -207,11 +235,11 @@ static int compare_to_null(const void* p1, const void* p2) {
 }
 
 void ecs_entitycontainer_free_queued(struct EntityContainer* const ec) {
-  for(int ri = 0; ri < MAX_ENTITIES; ri++) { // remove index
+  for(int ri = 0; ri < ec->max_entities; ri++) { // remove index
     if(ec->queued_for_free[ri] != NULL) { // Don't even try to remove it if it's already NULL!
       struct Entity* to_remove = ec->queued_for_free[ri];
       if (to_remove == ec->player) ec->player = NULL; // special case for the player
-      for(int ei = 0; ei < MAX_ENTITIES; ei++) { // entity index
+      for(int ei = 0; ei < ec->max_entities; ei++) { // entity index
         if(ec->entities[ei] == to_remove) {
           ecs_entity_free(ec->entities[ei]);
           ec->entities[ei] = NULL;
@@ -221,11 +249,11 @@ void ecs_entitycontainer_free_queued(struct EntityContainer* const ec) {
     }
   }
 
-  qsort(ec->entities, MAX_ENTITIES, sizeof(struct Entity*), compare_to_null);
+  qsort(ec->entities, ec->max_entities, sizeof(struct Entity*), compare_to_null);
 }
 
 bool ecs_entitycontainer_contains_entity(struct EntityContainer const* const ec, struct Entity const* const e) {
-  for(int i = 0; i < MAX_ENTITIES; i++) {
+  for(int i = 0; i < ec->max_entities; i++) {
     if(ec->entities[i] == e) return true;
   }
   return false;
@@ -234,8 +262,11 @@ bool ecs_entitycontainer_contains_entity(struct EntityContainer const* const ec,
 
 struct EntityContainer* ecs_entitycontainer_create() {
   struct EntityContainer* new_ec = new(new_ec);
+  new_ec->max_entities = MAX_ENTITIES_INITIAL;
+  new_ec->entities = malloc(sizeof(struct Entity*) * new_ec->max_entities);
+  new_ec->queued_for_free = malloc(sizeof(struct Entity*) * new_ec->max_entities);
   // No dangling pointers here!
-  for(int i = 0; i < MAX_ENTITIES; i++) {
+  for(int i = 0; i < new_ec->max_entities; i++) {
     new_ec->entities[i] = NULL;
     new_ec->queued_for_free[i] = NULL;
   }
@@ -255,7 +286,7 @@ struct EntityContainer* ecs_entitycontainer_create() {
 
 void ecs_entitycontainer_free(struct EntityContainer* const ec) {
   // Free all child entities and then ourselves
-  for(int i = 0; i < MAX_ENTITIES; i++) {
+  for(int i = 0; i < ec->max_entities; i++) {
     if(ec->entities[i] != NULL) ecs_entity_free(ec->entities[i]);
   }
   UnloadFont(ec->game_font);
@@ -283,7 +314,7 @@ void ecs_entitycontainer_rm_all_systems(struct EntityContainer* const ec) {
 void ecs_entitycontainer_tick(struct EntityContainer* const ec) {
   for (int sys_idx = 0; sys_idx < MAX_SYSTEMS; sys_idx++) {
     if (ec->systems[sys_idx] != NULL) {
-      for (int ent_idx = 0; ent_idx < MAX_ENTITIES; ent_idx++) {
+      for (int ent_idx = 0; ent_idx < ec->max_entities; ent_idx++) {
         if (ec->entities[ent_idx] != NULL)
           ec->systems[sys_idx](ec, ec->entities[ent_idx]);
       }
