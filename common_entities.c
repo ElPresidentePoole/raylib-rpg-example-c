@@ -117,6 +117,7 @@ struct Entity* rpg_missile_create(struct Entity* const player, Camera2D* cam) {
     missile->trans_c->velocity.y *= MISSILE_SPEED;
     missile->trans_c->angular_velocity = 270;
     missile->trans_c->position = (Vector2){player->trans_c->position.x, player->trans_c->position.y};
+    missile->trans_c->uses_world_position = true;
     missile->trans_c->angle = angle_between_player_and_mouse * 180 / 3.1416 - 135;
     missile->trans_c->origin = (Vector2){.x = (float)TILE_SIZE / 2, .y = (float)TILE_SIZE / 2};
     missile->alp_c = new(missile->alp_c);
@@ -136,7 +137,9 @@ struct Entity* rpg_missile_create(struct Entity* const player, Camera2D* cam) {
     missile->col_c->dmg = rand() % 5 + 3;
     missile->tra_c = new(missile->tra_c);
     missile->tra_c->time_between_copies = 0.05f;
+    missile->tra_c->time_remaining = 0.05f;
     missile->tra_c->remaining_copies = 15;
+
     return missile;
 }
 
@@ -145,11 +148,11 @@ struct Entity* rpg_coin_create(float x, float y, int amount_of_gold) {
 
     coin->trans_c = new(coin->trans_c);
     coin->trans_c->position = (Vector2){x, y};
+    coin->trans_c->uses_world_position = true;
     coin->trans_c->angle = 0.0;
     coin->trans_c->origin = (Vector2){.x = TILE_SIZE / 2.f, .y = TILE_SIZE / 2.f};
     coin->trans_c->velocity = VECTOR2_ZERO;
     coin->trans_c->angular_velocity = 0.f; 
-    coin->trans_c->uses_world_position = true;
     coin->tex_c = new(coin->tex_c);
     coin->tex_c->source = (Rectangle){.x = 41 * TILE_SIZE, .y = 40 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
     coin->alp_c = new(coin->alp_c);

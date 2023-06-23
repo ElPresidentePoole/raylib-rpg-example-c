@@ -288,9 +288,12 @@ void ecs_entitycontainer_free(struct EntityContainer* const ec) {
   // Free all child entities and then ourselves
   for(int i = 0; i < ec->max_entities; i++) {
     if(ec->entities[i] != NULL) ecs_entity_free(ec->entities[i]);
+    if(ec->queued_for_free[i] != NULL) ecs_entity_free(ec->queued_for_free[i]); // neccessary?
   }
   UnloadFont(ec->game_font);
   UnloadTexture(ec->game_tileset);
+  free(ec->entities);
+  free(ec->queued_for_free);
   free(ec);
 }
 

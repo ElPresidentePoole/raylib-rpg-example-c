@@ -33,7 +33,7 @@ int main() {
     ecs_entitycontainer_free_queued(world);
   }
 
-  // ecs_entitycontainer_free(world);
+  ecs_entitycontainer_free(world);
 
   CloseWindow();        // Close window and OpenGL context
   return 0;
