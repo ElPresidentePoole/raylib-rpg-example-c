@@ -6,7 +6,7 @@
 #include "ecs_components.h"
 #include "ecs_systems.h"
 #include "ecs_structs.h"
-#define MAX_ENTITIES_INITIAL 1024
+#define MAX_ENTITIES_INITIAL 8
 #define MAX_SYSTEMS 16
 
 struct Entity {
@@ -26,6 +26,8 @@ struct Entity {
   struct XpTrackerComponent* xpt_c;
   struct ClickableComponent* cli_c;
   struct CameraFollowComponent* camf_c;
+  struct MeleeAttackComponent* mela_c;
+  struct RangedAttackComponent* rana_c;
 };
 
 // Entity Container

@@ -21,6 +21,8 @@ struct XpRewardComponent;
 struct XpTrackerComponent;
 struct ClickableComponent;
 struct CameraFollowComponent; // TODO: not implemented :)
+struct MeleeAttackComponent;
+struct RangedAttackComponent;
 struct Entity;
 struct EntityContainer;
 
@@ -106,6 +108,15 @@ struct XpTrackerComponent {
 struct ClickableComponent {
   void (*on_click)(struct EntityContainer* const);
   struct Dimensions size;
+};
+
+struct MeleeAttackComponent {
+  int dmg;
+};
+
+struct RangedAttackComponent {
+  int dmg;
+  void (*missile_func)(struct EntityContainer* const, struct Entity* const);
 };
 
 #endif // ECS_COMPONENTS_H_

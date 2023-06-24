@@ -6,12 +6,7 @@
 #include "ecs.h"
 #include "util.h"
 #include "scenes.h"
-
-const unsigned int LAYER_ENEMY_HURTBOX = 16; // 0b10000
-const unsigned int LAYER_PLAYER = 8; // 0b01000
-const unsigned int LAYER_TROLL = 4; // 0b00100
-const unsigned int LAYER_MISSILE = 2; // 0b00010
-const unsigned int LAYER_COIN = 1; // 0b00001
+#include "magic.h"
 
 struct Entity* rpg_player_create(float x, float y) {
     struct Entity* player = ecs_entity_create();
@@ -24,10 +19,10 @@ struct Entity* rpg_player_create(float x, float y) {
     player->trans_c->angular_velocity = 0.0;
     player->tex_c = new(player->tex_c);
     player->tex_c->source = (Rectangle){.x = 6 * TILE_SIZE, .y = 79 * TILE_SIZE, .width = TILE_SIZE, .height = TILE_SIZE};
-    player->alp_c = new(player->alp_c);
-    player->alp_c->alpha = 255U;
-    player->alp_c->fading = false;
-    player->alp_c->fade_per_second = 0;
+    // player->alp_c = new(player->alp_c);
+    // player->alp_c->alpha = 255U;
+    // player->alp_c->fading = false;
+    // player->alp_c->fade_per_second = 0;
     player->col_c = new(player->col_c);
     player->col_c->layer = LAYER_PLAYER;
     player->col_c->mask = LAYER_COIN | LAYER_ENEMY_HURTBOX;
@@ -44,6 +39,8 @@ struct Entity* rpg_player_create(float x, float y) {
     player->xpt_c->level = 1;
     player->xpt_c->xp_total = 0;
     player->xpt_c->xp_for_next_level = 5;
+    player->mela_c = new(player->mela_c);
+    player->mela_c->dmg = 10;
 
     return player;
 }
@@ -194,7 +191,7 @@ struct Entity* rpg_label_create(float x, float y, const char* text, const Color 
     return label;
 }
 
-struct Entity* rpg_hurtbox_create(float x, float y, int dmg) {
+struct Entity* rpg_hurtbox_create(float x, float y, int dmg, unsigned int layer) {
     struct Entity *troll_whack = ecs_entity_create();
     troll_whack->trans_c = new (troll_whack->trans_c);
     troll_whack->trans_c->position = (Vector2){x, y};

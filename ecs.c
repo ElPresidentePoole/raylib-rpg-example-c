@@ -1,5 +1,6 @@
 #include "ecs.h"
 #include "util.h"
+#include "magic.h"
 #include "common_entities.h"
 #include <raylib.h>
 #include <sys/param.h>
@@ -7,7 +8,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdbool.h>
-#define ECS_COL_DEBUG 0 // draw hitboxes
+#define ECS_COL_DEBUG 1 // draw hitboxes
 
 struct Entity* ecs_entity_create() {
   struct Entity* e = new(e);
@@ -27,6 +28,8 @@ struct Entity* ecs_entity_create() {
   e->xpt_c = NULL;
   e->cli_c = NULL;
   e->camf_c = NULL;
+  e->mela_c = NULL;
+  e->rana_c = NULL;
   return e;
 }
 
@@ -47,6 +50,8 @@ void ecs_entity_free(struct Entity* const e) {
   if (e->xpt_c != NULL) free(e->xpt_c);
   if (e->cli_c != NULL) free(e->cli_c);
   if (e->camf_c != NULL) free(e->camf_c);
+  if (e->mela_c != NULL) free(e->mela_c);
+  if (e->rana_c != NULL) free(e->rana_c);
   free(e);
 }
 
@@ -334,7 +339,7 @@ void e_control_run_towards_player(struct EntityContainer* const ec, struct Entit
     e->trans_c->velocity = VECTOR2_ZERO;
     if(cooldown <= 0) {
       cooldown = 2.f;
-      struct Entity* troll_whack = rpg_hurtbox_create(e->trans_c->position.x, e->trans_c->position.y, 1);
+      struct Entity* troll_whack = rpg_hurtbox_create(e->trans_c->position.x, e->trans_c->position.y, 1, LAYER_ENEMY_HURTBOX);
       ecs_entitycontainer_push(ec, troll_whack);
     }
   } else {
@@ -371,8 +376,11 @@ void e_control_player_controls(struct EntityContainer* const ec, struct Entity* 
   e->trans_c->velocity = pm_normal;
 
   if(IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cooldown <= 0.f) { 
-    struct Entity* missile = rpg_missile_create(e, &ec->cam);
+    if(e->mela_c != NULL) {
+      rpg_hurtbox_create(e->trans_c->position.x, e->trans_c->position.y, e->mela_c->dmg, LAYER_MISSILE);
+    }
+    // struct Entity* missile = rpg_missile_create(e, &ec->cam);
     cooldown = 0.15f;
-    ecs_entitycontainer_push(ec, missile);
+    // ecs_entitycontainer_push(ec, missile);
   }
 }
