@@ -7,7 +7,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdbool.h>
-#define ECS_COL_DEBUG 1 // draw hitboxes
+#define ECS_COL_DEBUG 0 // draw hitboxes
 
 struct Entity* ecs_entity_create() {
   struct Entity* e = new(e);

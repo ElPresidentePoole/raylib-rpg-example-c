@@ -1,5 +1,19 @@
 #+title: Readme
 
+* Building
+
+On Linux
+
+#+BEGIN_SRC bash
+make BUILD=release
+#+END_SRC
+
+On Linux
+
+#+BEGIN_SRC bash
+make target=WINDOWS BUILD=release
+#+END_SRC
+
 * Credits
 - Dungeon Crawl 32x32 Tiles :: https://opengameart.org/content/dungeon-crawl-32x32-tiles
 - Raylib :: https://www.raylib.com/
