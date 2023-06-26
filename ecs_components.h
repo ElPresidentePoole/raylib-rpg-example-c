@@ -116,7 +116,7 @@ struct MeleeAttackComponent {
 
 struct RangedAttackComponent {
   int dmg;
-  void (*missile_func)(struct EntityContainer* const, struct Entity* const);
+  struct Entity* (*missile_func)(float x, float y, double angle, int dmg);
 };
 
 #endif // ECS_COMPONENTS_H_

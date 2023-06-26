@@ -40,6 +40,7 @@ struct EntityContainer {
   Texture2D game_tileset;
   struct Entity* player; // this entity is very popular, so it would be best if we just held onto it
   Camera2D cam;
+  RenderTexture2D render_here;
 };
 
 // Entity Container
@@ -62,6 +63,7 @@ void ecs_entity_free(struct Entity* const e);
 
 // On Timeout Functions
 void on_timeout_spawn_troll(struct EntityContainer* const ec, struct Entity* const e);
+void on_timeout_manage_wave(struct EntityContainer* const ec, struct Entity* const e);
 
 // Control functions
 void e_control_run_towards_player(struct EntityContainer* const ec, struct Entity* const e);

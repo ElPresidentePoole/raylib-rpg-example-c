@@ -8,7 +8,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdbool.h>
-#define ECS_COL_DEBUG 1 // draw hitboxes
+#include <string.h>
+#define ECS_COL_DEBUG 0 // draw hitboxes
 
 struct Entity* ecs_entity_create() {
   struct Entity* e = new(e);
@@ -58,6 +59,7 @@ void ecs_entity_free(struct Entity* const e) {
 
 void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
   BeginDrawing();
+  BeginTextureMode(ec->render_here);
   ClearBackground(BLACK);
   BeginMode2D(ec->cam);
 
@@ -134,6 +136,9 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
     }
   }
 
+  DrawFPS(12, 12);
+  EndTextureMode();
+  DrawTexturePro(ec->render_here.texture, (Rectangle){0, 0, SCREEN_WIDTH, -SCREEN_HEIGHT}, (Rectangle){0, 0, GetScreenWidth(), GetScreenHeight()}, VECTOR2_ZERO, 0.f, WHITE);
   EndDrawing();
 }
 
@@ -142,6 +147,12 @@ void on_timeout_spawn_troll(struct EntityContainer* const ec, struct Entity* con
 
   ecs_entitycontainer_push(ec, troll);
   // ecs_entitycontainer_queue_for_freeing(ec, e);
+}
+
+void on_timeout_manage_wave(struct EntityContainer* const ec, struct Entity* const e) {
+  printf("TODO on_timeout_manage_wave\n");
+  const char* t = TextFormat("Wave: %d", 1);
+  strcpy(e->lab_c->text, t);
 }
 
 void ecs_entitycontainer_push(struct EntityContainer* const ec, struct Entity* const e) {
@@ -180,7 +191,7 @@ void ecs_entitycontainer_push(struct EntityContainer* const ec, struct Entity* c
     ec->entities = new_entities;
     ec->queued_for_free = new_queued_for_free;
     ec->max_entities = new_size;
-    printf("Successfully resized ec->entities to %lu", ec->max_entities);
+    printf("Successfully resized ec->entities to %lu\n", ec->max_entities);
     ec->entities[old_size] = e;
     /*
     printf("Current pointers in ec->entities: ");
@@ -285,6 +296,7 @@ struct EntityContainer* ecs_entitycontainer_create() {
   new_ec->cam.rotation = 0.f;
   new_ec->cam.zoom = 2.f;
   new_ec->player = NULL;
+  new_ec->render_here = LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   return new_ec;
 }
@@ -330,57 +342,3 @@ void ecs_entitycontainer_tick(struct EntityContainer* const ec) {
   }
 }
 
-void e_control_run_towards_player(struct EntityContainer* const ec, struct Entity* const e) {
-  if(ec->player == NULL) return; // Don't bother if they're dead and gone
-
-  static float cooldown = 2.f;
-  cooldown -= GetFrameTime();
-  if(get_distance(e->trans_c->position.x, e->trans_c->position.y, ec->player->trans_c->position.x, ec->player->trans_c->position.y) < TILE_SIZE) { // FIXME: shouldn't we be getting the distance based off the pos+origin?
-    e->trans_c->velocity = VECTOR2_ZERO;
-    if(cooldown <= 0) {
-      cooldown = 2.f;
-      struct Entity* troll_whack = rpg_hurtbox_create(e->trans_c->position.x, e->trans_c->position.y, 1, LAYER_ENEMY_HURTBOX);
-      ecs_entitycontainer_push(ec, troll_whack);
-    }
-  } else {
-    static const int TROLL_SPEED = 100;
-    int dx = e->trans_c->position.x - ec->player->trans_c->position.x;
-    int dy = e->trans_c->position.y - ec->player->trans_c->position.y;
-    double angle_between_troll_and_target = atan2(dy, dx);
-    struct Vector2 v2 = (Vector2){-cos(angle_between_troll_and_target), -sin(angle_between_troll_and_target)};
-    v2.x *= TROLL_SPEED;
-    v2.y *= TROLL_SPEED;
-    struct Vector2 pm_normal = Vector2_normalized_multi(v2, TROLL_SPEED);
-    e->trans_c->velocity = pm_normal;
-  }
-}
-
-void e_control_player_controls(struct EntityContainer* const ec, struct Entity* const e) {
-  static const int PLAYER_SPEED = 200; // should this be a component or something?
-  static float cooldown = 0.15f;
-  cooldown -= GetFrameTime();
-  Vector2 player_movement = (Vector2){.x = 0, .y = 0};
-  if(IsKeyDown(KEY_S)) {
-    player_movement.y += 1;
-  }
-  if(IsKeyDown(KEY_W)) {
-    player_movement.y -= 1;
-  }
-  if(IsKeyDown(KEY_D)) {
-    player_movement.x += 1;
-  }
-  if(IsKeyDown(KEY_A)) {
-    player_movement.x -= 1;
-  }
-  struct Vector2 pm_normal = Vector2_normalized_multi(player_movement, PLAYER_SPEED);
-  e->trans_c->velocity = pm_normal;
-
-  if(IsMouseButtonDown(MOUSE_LEFT_BUTTON) && cooldown <= 0.f) { 
-    if(e->mela_c != NULL) {
-      rpg_hurtbox_create(e->trans_c->position.x, e->trans_c->position.y, e->mela_c->dmg, LAYER_MISSILE);
-    }
-    // struct Entity* missile = rpg_missile_create(e, &ec->cam);
-    cooldown = 0.15f;
-    // ecs_entitycontainer_push(ec, missile);
-  }
-}

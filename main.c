@@ -20,11 +20,11 @@ int main() {
   srand(time(NULL));
 
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "rpg");
+  SetWindowState(FLAG_WINDOW_RESIZABLE);
 
   // GameState current_state = MAIN_MENU;
   // InitAudioDevice();
 
-  SetTargetFPS(60); // TODO: replace this with proper handling of DT
   struct EntityContainer* world = ecs_entitycontainer_create();
   scene_main_menu_setup(world);
   while (!WindowShouldClose()) {

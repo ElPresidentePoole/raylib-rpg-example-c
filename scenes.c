@@ -27,6 +27,7 @@ void scene_in_game_setup(struct EntityContainer* world) {
   struct Entity* player = rpg_player_create(0, 0);
   world->player = player;
   ecs_entitycontainer_push(world, player);
+  ecs_entitycontainer_push(world, rpg_spawn_wave_manager());
 
   const unsigned int PORTALS = 10;
   for(int i = 0; i < PORTALS; i++) {
