@@ -14,3 +14,11 @@ void draw_text_with_bg(Font f, const char* text, Vector2 dest, float size, float
   DrawTextEx(f, text, (Vector2){.x = dest.x+1, .y = dest.y+1}, size, spacing, bg);
   DrawTextEx(f, text, dest, size, spacing, fg);
 }
+
+float get_screen_height_multi() {
+  return ((float)GetScreenHeight() / SCREEN_HEIGHT);
+}
+
+float get_screen_width_multi() {
+  return ((float)GetScreenWidth() / SCREEN_WIDTH);
+}

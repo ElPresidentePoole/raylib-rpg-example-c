@@ -14,6 +14,8 @@
 
 Vector2 Vector2_normalized_multi(Vector2 v, float multi);
 float get_distance(float x1, float y1, float x2, float y2);
+float get_screen_height_multi();
+float get_screen_width_multi();
 void draw_text_with_bg(Font f, const char* text, Vector2 dest, float size, float spacing, Color fg, Color bg);
 
 #endif // UTIL_H_
