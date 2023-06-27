@@ -136,7 +136,7 @@ void ecs_entitycontainer_render(const struct EntityContainer* const ec) {
     }
   }
 
-  DrawFPS(12, 12);
+  DrawFPS(SCREEN_WIDTH - 100 , 12);
   EndTextureMode();
   DrawTexturePro(ec->render_here.texture, (Rectangle){0, 0, SCREEN_WIDTH, -SCREEN_HEIGHT}, (Rectangle){0, 0, GetScreenWidth(), GetScreenHeight()}, VECTOR2_ZERO, 0.f, WHITE);
   EndDrawing();
@@ -146,13 +146,25 @@ void on_timeout_spawn_troll(struct EntityContainer* const ec, struct Entity* con
   struct Entity* troll = rpg_troll_create(e->trans_c->position.x, e->trans_c->position.y);
 
   ecs_entitycontainer_push(ec, troll);
-  // ecs_entitycontainer_queue_for_freeing(ec, e);
+  if(e->tim_c->repetitions == 1) ecs_entitycontainer_queue_for_freeing(ec, e); // this was our last one, delete us!
 }
 
 void on_timeout_manage_wave(struct EntityContainer* const ec, struct Entity* const e) {
-  printf("TODO on_timeout_manage_wave\n");
-  const char* t = TextFormat("Wave: %d", 1);
+  static int timer = 60;
+  static int wave = 1;
+  const char* t = TextFormat("Wave: %d, %d seconds to next wave", wave, timer);
   strcpy(e->lab_c->text, t);
+  if(timer == 0) {
+    timer = 60;
+    wave++;
+    const unsigned int PORTALS = 10 * wave;
+    for(int i = 0; i < PORTALS; i++) {
+      int portal_x = rand() % 800 - 400;
+      int portal_y = rand() % 800 - 400;
+      ecs_entitycontainer_push(ec, rpg_portal_create(portal_x, portal_y));
+    }
+  }
+  timer--;
 }
 
 void ecs_entitycontainer_push(struct EntityContainer* const ec, struct Entity* const e) {

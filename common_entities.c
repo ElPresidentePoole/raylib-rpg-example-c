@@ -269,7 +269,7 @@ struct Entity* rpg_spawn_wave_manager() {
   manager->trans_c->position = (Vector2){ 10, SCREEN_HEIGHT - 100 };
   manager->trans_c->uses_world_position = false;
   manager->lab_c = new(manager->lab_c);
-  strcpy(manager->lab_c->text, "asdsadad");
+  strcpy(manager->lab_c->text, "Wave 1");
   manager->lab_c->color = BLUE;
   manager->lab_c->size = 30.f;
   return manager;

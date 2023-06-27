@@ -20,7 +20,7 @@ int main() {
   srand(time(NULL));
 
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "rpg");
-  SetWindowState(FLAG_WINDOW_RESIZABLE);
+  // SetWindowState(FLAG_WINDOW_RESIZABLE);
 
   // GameState current_state = MAIN_MENU;
   // InitAudioDevice();
